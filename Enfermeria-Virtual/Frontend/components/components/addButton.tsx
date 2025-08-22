@@ -2,7 +2,7 @@
 import React from "react";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { addButton } from "../../styles/styles"; // Ajusta si es necesario
+import { addButton } from "../../styles/styles";
 import { useRouter } from "expo-router"; // ✅
 
 export const AddButton = () => {
@@ -11,7 +11,7 @@ export const AddButton = () => {
   return (
     <TouchableOpacity
       style={addButton.floatingButton}
-      onPress={() => router.push("/windows/FormularioCita")} // ✅ usa la ruta del archivo
+      onPress={() => router.push("/windows/FormularioCita")}
       activeOpacity={0.75}
     >
       <Ionicons name="add" size={35} color="#fff" />

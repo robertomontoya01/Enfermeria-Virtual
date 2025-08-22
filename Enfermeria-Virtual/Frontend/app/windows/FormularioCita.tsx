@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
-import { useNavigation } from "expo-router"; // 👈 importas desde expo-router
-
+import { useNavigation } from "expo-router";
 export default function FormularioCita() {
   const [fecha, setFecha] = useState("");
   const [doctor, setDoctor] = useState("");

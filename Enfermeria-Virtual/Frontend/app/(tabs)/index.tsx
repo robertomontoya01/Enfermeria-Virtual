@@ -2,7 +2,6 @@
 import React from "react";
 import { View, Text, Image, ScrollView } from "react-native";
 import { styles, cardCitas } from "../../styles/styles";
-import CitaVisual from "@/components/components/citaVisual";
 
 export default function IndexScreen() {
   return (
