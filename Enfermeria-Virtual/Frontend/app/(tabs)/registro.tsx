@@ -40,7 +40,7 @@ export default function BitacoraGlucosa() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Bitácora de Glucosa</Text>
+      <Text style={styles.titulo}>Bitácora de Glucosa Capilar</Text>
       <Text style={styles.pasoActual}>Registro: {pasos[diaActual]}</Text>
 
       <TextInput

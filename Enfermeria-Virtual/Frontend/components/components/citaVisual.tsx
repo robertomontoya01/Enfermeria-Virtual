@@ -31,15 +31,35 @@ export default function CitaVisual({ cita }: { cita: Cita }) {
 
   return (
     <View style={cardCitas.card}>
-      {/* ─── FECHA ─── */}
-      <View style={cardCitas.header}>
-        <Ionicons
-          name="calendar"
-          size={18}
-          color="#1e88e5"
-          style={{ marginRight: 6 }}
-        />
-        <Text style={cardCitas.date}>{fechaFormateada}</Text>
+      {/* ─── ENCABEZADO (Fecha + ID) ─── */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* Fecha */}
+        <View style={cardCitas.header}>
+          <Ionicons
+            name="calendar"
+            size={18}
+            color="#1e88e5"
+            style={{ marginRight: 6 }}
+          />
+          <Text style={cardCitas.date}>{fechaFormateada}</Text>
+        </View>
+
+        {/* Badge con Cita ID */}
+        <View
+          style={{
+            paddingVertical: 4,
+            paddingHorizontal: 8,
+            borderRadius: 6,
+          }}
+        >
+          <Text style={cardCitas.id}>ID: {cita.ID}</Text>
+        </View>
       </View>
 
       {/* ─── DOCTOR ─── */}

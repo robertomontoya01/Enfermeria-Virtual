@@ -1,9 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { switchSelector, cardCitas } from "../../styles/styles";
 import CitaVisual from "./citaVisual";
 import { API_BASE_URL } from "../../constants/config";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface Cita {
   ID: number;
@@ -12,70 +20,101 @@ interface Cita {
   PacienteID: number;
   StatusID: number;
   LaboratorioID?: number | null;
-
   doctorNombre?: string;
   pacienteNombre?: string;
   laboratorioNombre?: string;
   statusNombre?: string;
 }
 
-type UserType = "doctor" | "paciente";
-
 export const SwitchSelector = () => {
-  const [usuario, setUsuario] = useState<{
-    id: number;
-    tipo_usuario: UserType;
-  } | null>(null);
   const [citas, setCitas] = useState<Cita[]>([]);
   const [selectedTab, setSelectedTab] = useState<
     "activas" | "canceladas" | "anteriores"
   >("activas");
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    setUsuario({ id: 3, tipo_usuario: "paciente" });
-  }, []);
+  const fetchCitas = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
 
-  useEffect(() => {
-    if (!usuario) return;
+      const res = await axios.get(`${API_BASE_URL}/api/citas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    axios
-      .get(`${API_BASE_URL}/api/citas`, {
-        params: { userId: usuario.id, type: usuario.tipo_usuario },
-      })
-      .then((res) => setCitas(res.data))
-      .catch((err) => console.error("Error al obtener citas:", err));
-  }, [usuario]);
-
-  const statusMap = {
-    activas: [1, 2], // Pendiente y Confirmada
-    canceladas: [3], // Cancelada
-    anteriores: [4], // Rechazada
+      setCitas(res.data);
+    } catch (err) {
+      console.error("Error al obtener citas:", err);
+    }
   };
 
-  const citasFiltradas = citas.filter((cita) =>
-    statusMap[selectedTab].includes(cita.StatusID)
+  // 🔄 Se ejecuta al volver a la pantalla
+  useFocusEffect(
+    useCallback(() => {
+      fetchCitas();
+    }, [])
   );
+
+  // ⬇️ Pull-to-refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCitas();
+    setRefreshing(false);
+  };
+
+  const today = new Date();
+
+  const citasFiltradas = citas.filter((cita) => {
+    const citaFecha = new Date(cita.Fecha_cita);
+    switch (selectedTab) {
+      case "activas":
+        return (
+          (cita.StatusID === 1 || cita.StatusID === 2) && citaFecha >= today
+        );
+      case "canceladas":
+        return cita.StatusID === 3 || cita.StatusID === 4;
+      case "anteriores":
+        return citaFecha < today;
+      default:
+        return false;
+    }
+  });
+
+  const tabNames = {
+    activas: "Pendientes y Confirmadas",
+    canceladas: "Canceladas y Rechazadas",
+    anteriores: "Anteriores",
+  };
+
+  const tabColors = {
+    activas: "#339900", // verde
+    canceladas: "#cc3300", // rojo
+    anteriores: "#ec942c", // naranja
+  };
 
   return (
     <View style={switchSelector.container}>
       {/* Pestañas */}
       <View style={switchSelector.tabs}>
-        {["activas", "canceladas", "anteriores"].map((tab) => (
+        {(["activas", "canceladas", "anteriores"] as const).map((tab) => (
           <TouchableOpacity
             key={tab}
-            onPress={() => setSelectedTab(tab as any)}
+            onPress={() => setSelectedTab(tab)}
             style={[
               switchSelector.tab,
-              selectedTab === tab && switchSelector.activeTab,
+              {
+                backgroundColor: tabColors[tab],
+                borderRadius: 1,
+              },
             ]}
           >
             <Text
               style={[
                 switchSelector.tabText,
-                selectedTab === tab && switchSelector.activeText,
+                { textAlign: "center", color: "#fff", fontWeight: "700" },
               ]}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tabNames[tab]}
             </Text>
           </TouchableOpacity>
         ))}
@@ -85,6 +124,9 @@ export const SwitchSelector = () => {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={cardCitas.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {citasFiltradas.length === 0 && (
           <Text style={{ textAlign: "center", marginTop: 20, color: "#666" }}>

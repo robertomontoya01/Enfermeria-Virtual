@@ -5,7 +5,7 @@ import { View, Text, StyleSheet } from "react-native";
 export default function GlosarioScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Glosario de medicinas</Text>
+      <Text style={styles.title}>Opciones</Text>
       {/* Aquí iría tu lista de citas, calendario, etc. */}
     </View>
   );

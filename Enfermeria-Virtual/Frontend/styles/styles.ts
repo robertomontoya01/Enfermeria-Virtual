@@ -68,6 +68,11 @@ export const cardCitas = StyleSheet.create({
     fontWeight: "700",
     alignSelf: "flex-end",
   },
+  id: {
+    color: "#000",
+    fontWeight: "700",
+    fontSize: 12,
+  },
 });
 
 export const addButton = StyleSheet.create({

@@ -41,22 +41,22 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
-        name="glosario"
-        options={{
-          title: "Glosario",
-          tabBarLabel: "Glosario",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="medicinas"
         options={{
           title: "Medicinas",
           tabBarLabel: "Medicinas",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bed" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="opciones"
+        options={{
+          title: "Opciones",
+          tabBarLabel: "Opciones",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="options" color={color} size={size} />
           ),
         }}
       />

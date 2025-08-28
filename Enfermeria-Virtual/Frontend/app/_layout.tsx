@@ -23,9 +23,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
+        {/* Pantallas principales */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
+
+        <Stack.Screen
+          name="windows/FormularioCita"
+          options={{ title: "Agregar Cita" }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

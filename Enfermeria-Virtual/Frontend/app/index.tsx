@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../constants/config";
 
 export default function Inicio() {
@@ -29,7 +30,10 @@ export default function Inicio() {
         email,
         password,
       });
-      console.log("Login exitoso:", res.data);
+
+      // 🔑 Guardar token en AsyncStorage
+      await AsyncStorage.setItem("token", res.data.token);
+      console.log("Token guardado:", res.data.token);
 
       Alert.alert("Bienvenido", res.data.usuario.nombre);
       router.replace("/(tabs)"); // Redirige a la pantalla principal
@@ -67,14 +71,23 @@ export default function Inicio() {
         onChangeText={setPassword}
       />
 
-      {/* Botón */}
+      {/* Botón login */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Iniciar sesión</Text>
+      </TouchableOpacity>
+
+      {/* 🔹 Botón crear cuenta */}
+      <TouchableOpacity
+        style={styles.createAccountButton}
+        onPress={() => router.push("/windows/Registro")}
+      >
+        <Text style={styles.createAccountText}>Crear una cuenta</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
+// === Tus estilos ===
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -92,6 +105,7 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: "contain",
     marginBottom: -15,
+    marginTop: -150,
   },
   Maintitle: {
     fontSize: 24,
@@ -113,10 +127,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: "100%",
     alignItems: "center",
+    marginBottom: 15,
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  createAccountButton: {
+    padding: 10,
+  },
+  createAccountText: {
+    color: "#1e88e5",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
