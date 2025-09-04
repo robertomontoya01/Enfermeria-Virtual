@@ -18,6 +18,7 @@ export default function Inicio() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -26,20 +27,30 @@ export default function Inicio() {
     }
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/login`, {
-        email,
+      setLoading(true);
+
+      // 👇 Nueva ruta
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email: email.trim(),
         password,
       });
 
-      // 🔑 Guardar token en AsyncStorage
-      await AsyncStorage.setItem("token", res.data.token);
-      console.log("Token guardado:", res.data.token);
+      const { token, usuario } = res.data;
 
-      Alert.alert("Bienvenido", res.data.usuario.nombre);
-      router.replace("/(tabs)"); // Redirige a la pantalla principal
+      // 🔑 Guardar token y usuario
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("usuario", JSON.stringify(usuario));
+
+      // (opcional) Dejar axios listo con el token
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+      Alert.alert("Bienvenido", usuario.nombre);
+      router.replace("/(tabs)");
     } catch (error: any) {
       console.error(error);
-      Alert.alert("Error", error.response?.data?.error || "Error en el login");
+      Alert.alert("Error", error?.response?.data?.error || "Error en el login");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,6 +71,7 @@ export default function Inicio() {
         placeholder="Correo electrónico"
         keyboardType="email-address"
         autoCapitalize="none"
+        autoCorrect={false}
         value={email}
         onChangeText={setEmail}
       />
@@ -72,11 +84,17 @@ export default function Inicio() {
       />
 
       {/* Botón login */}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Iniciar sesión</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.6 }]}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? "Ingresando..." : "Iniciar sesión"}
+        </Text>
       </TouchableOpacity>
 
-      {/* 🔹 Botón crear cuenta */}
+      {/* Crear cuenta */}
       <TouchableOpacity
         style={styles.createAccountButton}
         onPress={() => router.push("/windows/Registro")}
@@ -87,7 +105,7 @@ export default function Inicio() {
   );
 }
 
-// === Tus estilos ===
+// === Estilos ===
 const styles = StyleSheet.create({
   container: {
     flex: 1,

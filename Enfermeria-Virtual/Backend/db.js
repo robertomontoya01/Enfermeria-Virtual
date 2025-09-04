@@ -1,21 +1,15 @@
-const mysql = require("mysql2");
+// Backend/db.js
+require("dotenv").config();
+const mysql = require("mysql2/promise");
 
-// Crear conexión con la base de datos
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root",
-  database: "enfermeria_virtual",
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "root",
+  database: process.env.DB_NAME || "enfermeria_virtual",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
-// Conectar a la base de datos
-connection.connect((err) => {
-  if (err) {
-    console.error("Error conectando a la base de datos:", err);
-    return;
-  }
-  console.log("Conectado a MySQL correctamente");
-});
-
-// Exportar la conexión para usar en server.js
-module.exports = connection;
+module.exports = pool;

@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { View, Text, ScrollView } from "react-native";
+import React, { useState, useCallback, useMemo } from "react";
+import { Text, ScrollView, RefreshControl } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CitaVisual from "../../components/components/citaVisual";
@@ -7,9 +7,16 @@ import { API_BASE_URL } from "../../constants/config";
 import { cardCitas } from "../../styles/styles";
 import { useFocusEffect } from "@react-navigation/native";
 
+const api = axios.create({ baseURL: API_BASE_URL });
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 interface Cita {
   ID: number;
-  Fecha_cita: string;
+  Fecha_cita: string; // "YYYY-MM-DD HH:mm:ss" o ISO
   DoctorID: number;
   PacienteID: number;
   StatusID: number;
@@ -20,58 +27,73 @@ interface Cita {
   statusNombre?: string;
 }
 
+type CitaRaw = Omit<Cita, "StatusID"> & { StatusID: number | string };
+
+// ✅ mover fuera del componente
+const ACTIVE_STATUSES = new Set([1, 2]);
+
+function parseFechaFlexible(dt: string): Date {
+  if (!dt) return new Date("1970-01-01");
+  if (dt.includes("T")) return new Date(dt);
+  const [datePart, timePart = "00:00:00"] = dt.split(" ");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm, ss] = timePart.split(":").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1, hh ?? 0, mm ?? 0, ss ?? 0);
+}
+
 export default function CitasActivas() {
   const [citas, setCitas] = useState<Cita[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchCitas = async () => {
+  const fetchCitas = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) return;
-
-      const res = await axios.get(`${API_BASE_URL}/api/citas`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setCitas(res.data);
+      const res = await api.get("/api/citas");
+      const normalizadas: Cita[] = (res.data as CitaRaw[]).map((c) => ({
+        ...c,
+        StatusID: Number(c.StatusID),
+      }));
+      setCitas(normalizadas);
     } catch (err) {
       console.error("Error al obtener citas:", err);
+      setCitas([]);
     }
-  };
+  }, []);
 
-  // 👇 se dispara cada vez que entras a esta ventana
   useFocusEffect(
     useCallback(() => {
       fetchCitas();
-    }, [])
+    }, [fetchCitas])
   );
 
-  const today = new Date();
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchCitas();
+    setRefreshing(false);
+  }, [fetchCitas]);
 
-  // Solo pendientes (1) y confirmadas (2) y que la fecha sea >= hoy
-  const citasActivas = citas.filter((cita) => {
-    const citaFecha = new Date(cita.Fecha_cita);
-    return (
-      (cita.StatusID === 1 ||
-        cita.StatusID === 2 ||
-        cita.StatusID === 3 ||
-        cita.StatusID === 4) &&
-      citaFecha >= today
-    );
-  });
+  const citasActivas = useMemo(() => {
+    const now = new Date(); // 👈 ahora está dentro del useMemo
+    return (citas || []).filter((c) => {
+      const fecha = parseFechaFlexible(String(c.Fecha_cita));
+      return ACTIVE_STATUSES.has(c.StatusID) && fecha >= now;
+    });
+  }, [citas]);
 
   return (
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={cardCitas.scrollContent}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
-      {citasActivas.length === 0 && (
+      {citasActivas.length === 0 ? (
         <Text style={{ textAlign: "center", marginTop: 20, color: "#666" }}>
           No hay citas activas
         </Text>
+      ) : (
+        citasActivas.map((cita) => <CitaVisual key={cita.ID} cita={cita} />)
       )}
-      {citasActivas.map((cita) => (
-        <CitaVisual key={cita.ID} cita={cita} />
-      ))}
     </ScrollView>
   );
 }
