@@ -50,16 +50,6 @@ export default function RootLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="opciones"
-        options={{
-          title: "Opciones",
-          tabBarLabel: "Opciones",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="options" color={color} size={size} />
-          ),
-        }}
-      />
     </Tabs>
   );
 }

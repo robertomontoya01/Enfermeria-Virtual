@@ -1,26 +1,25 @@
 // Backend/routes/auth.js
 const express = require("express");
-const bcrypt = require("bcryptjs"); // usa bcryptjs para compatibilidad
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const db = require("../db");
 
 const SECRET_KEY = process.env.JWT_SECRET || "mi_secreto_super_seguro";
 
-// Registro (paciente por defecto)
+/* ========= Registro ========= */
 router.post("/register", async (req, res) => {
-  const {
-    Nombre,
-    Apellidos,
-    Fecha_Nacimiento, // "YYYY-MM-DD"
-    Email,
-    Telefono,
-    Password, // texto plano desde el cliente
-    Especialidad_id, // opcional (normalmente null para paciente)
-  } = req.body;
-
   try {
-    // Validaciones básicas
+    const {
+      Nombre,
+      Apellidos,
+      Fecha_Nacimiento,
+      Email,
+      Telefono,
+      Password,
+      Especialidad_id,
+    } = req.body;
+
     if (
       !Nombre ||
       !Apellidos ||
@@ -32,23 +31,38 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
-    // Forzar paciente
-    const Tipo_usuario_id = 2;
+    const emailNorm = String(Email).trim().toLowerCase();
+    const telNorm = String(Telefono).trim();
 
-    // Hash de contraseña
+    const [[emailDup]] = await db.execute(
+      "SELECT COUNT(*) AS c FROM Usuarios WHERE LOWER(Email)=LOWER(?)",
+      [emailNorm]
+    );
+    if (emailDup.c > 0) {
+      return res.status(409).json({ error: "El correo ya está registrado" });
+    }
+
+    const [[telDup]] = await db.execute(
+      "SELECT COUNT(*) AS c FROM Usuarios WHERE Telefono = ?",
+      [telNorm]
+    );
+    if (telDup.c > 0) {
+      return res.status(409).json({ error: "El teléfono ya está registrado" });
+    }
+
+    const Tipo_usuario_id = 1;
     const hashed = await bcrypt.hash(Password, 10);
 
-    // Insert
     const [result] = await db.execute(
       `INSERT INTO Usuarios
-       (Nombre, Apellidos, Fecha_Nacimiento, Email, Telefono, Password, Tipo_usuario_id, Especialidad_id)
+        (Nombre, Apellidos, Fecha_Nacimiento, Email, Telefono, Password, Tipo_usuario_id, Especialidad_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         Nombre,
         Apellidos,
         Fecha_Nacimiento,
-        Email,
-        Telefono,
+        emailNorm,
+        telNorm,
         hashed,
         Tipo_usuario_id,
         Especialidad_id || null,
@@ -60,21 +74,38 @@ router.post("/register", async (req, res) => {
       userId: result.insertId,
     });
   } catch (error) {
-    // Duplicado (email único)
     if (error && error.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "El correo ya está registrado" });
+      const msg = (error.sqlMessage || "").toLowerCase();
+      if (msg.includes("email")) {
+        return res.status(409).json({ error: "El correo ya está registrado" });
+      }
+      if (
+        msg.includes("telefono") ||
+        msg.includes("tel") ||
+        msg.includes("phone")
+      ) {
+        return res
+          .status(409)
+          .json({ error: "El teléfono ya está registrado" });
+      }
+      return res.status(409).json({ error: "Dato duplicado (índice único)" });
     }
     console.error("Error en /register:", error);
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
-// Login (devuelve JWT)
-// routes/auth.js (solo la ruta de login)
+/* ========= Login ========= */
 router.post("/login", async (req, res) => {
-  // Acepta tanto Email/Password como email/password
-  const email = req.body.Email || req.body.email;
-  const plainPassword = req.body.Password || req.body.password;
+  const email = (req.body.Email || req.body.email || "")
+    .toString()
+    .trim()
+    .toLowerCase();
+  const plainPassword = (
+    req.body.Password ||
+    req.body.password ||
+    ""
+  ).toString();
 
   try {
     if (!email || !plainPassword) {
@@ -83,26 +114,33 @@ router.post("/login", async (req, res) => {
         .json({ error: "Email y contraseña son obligatorios" });
     }
 
-    // OJO: en la DB la columna es 'email' (todo minúsculas)
-    const [rows] = await db.execute("SELECT * FROM Usuarios WHERE email = ?", [
-      email,
-    ]);
+    const [rows] = await db.execute(
+      `SELECT 
+         id,
+         Nombre,
+         Apellidos,
+         Email   AS email,
+         Telefono,
+         Password AS password,
+         Tipo_usuario_id
+       FROM Usuarios
+       WHERE Email = ?`,
+      [email]
+    );
+
     if (rows.length === 0) {
       return res.status(401).json({ error: "Usuario no encontrado" });
     }
 
     const user = rows[0];
-
-    // OJO: en la DB la columna es 'password' (minúsculas)
     const ok = await bcrypt.compare(plainPassword, user.password);
     if (!ok) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
 
-    // Generar token
     const token = jwt.sign(
       { id: user.id, type: user.Tipo_usuario_id === 1 ? "paciente" : "doctor" },
-      process.env.JWT_SECRET || "mi_secreto_super_seguro",
+      SECRET_KEY,
       { expiresIn: "2h" }
     );
 
@@ -119,6 +157,50 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Error en /api/auth/login:", error);
     res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+/* ========= Registro de doctor con datos genéricos ========= */
+router.post("/register-doctor", async (req, res) => {
+  const { Nombre, Apellidos, Email, Telefono } = req.body;
+
+  if (!Nombre || !Apellidos || !Email || !Telefono) {
+    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  }
+
+  try {
+    const Tipo_usuario_id = 2; // Doctor
+    const Fecha_Nacimiento = "1970-01-01";
+    const Password = "default123";
+    const Especialidad_id = null;
+
+    const hashed = await bcrypt.hash(Password, 10);
+
+    const emailNorm = String(Email).trim().toLowerCase();
+
+    const [result] = await db.execute(
+      `INSERT INTO Usuarios 
+       (Nombre, Apellidos, Fecha_Nacimiento, Email, Telefono, Password, Tipo_usuario_id, Especialidad_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        Nombre,
+        Apellidos,
+        Fecha_Nacimiento,
+        emailNorm,
+        Telefono,
+        hashed,
+        Tipo_usuario_id,
+        Especialidad_id,
+      ]
+    );
+
+    res.json({ mensaje: "Doctor registrado", userId: result.insertId });
+  } catch (error) {
+    if (error && error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ error: "El correo ya está registrado" });
+    }
+    console.error("Error en /register-doctor:", error);
+    res.status(500).json({ error: "Error al registrar doctor" });
   }
 });
 

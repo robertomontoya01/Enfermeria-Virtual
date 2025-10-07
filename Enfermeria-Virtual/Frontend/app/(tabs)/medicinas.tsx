@@ -1,4 +1,3 @@
-// app/(tabs)/medicinas.tsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   View,
@@ -310,13 +309,11 @@ export default function MedicinasScreen() {
           ))}
         </Picker>
       </View>
-      {!!viaNombre && (
-        <Text style={styles.hint}>Seleccionada: {viaNombre}</Text>
-      )}
 
+      <Text style={styles.label}>Cada cuantas horas:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Cada cuántas horas (ej. 8)"
+        placeholder="(ej. 8)"
         value={intervaloHoras}
         onChangeText={setIntervaloHoras}
         keyboardType="numeric"
@@ -357,7 +354,7 @@ export default function MedicinasScreen() {
       </View>
 
       <TextInput
-        style={[styles.input, { height: 90 }]}
+        style={[styles.input, { height: 90, textAlign: "center" }]}
         placeholder="Observaciones"
         value={observaciones}
         onChangeText={setObservaciones}

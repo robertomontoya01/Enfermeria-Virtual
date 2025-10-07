@@ -4,9 +4,14 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 
+// Importar tus rutas
+const tomasRoutes = require("./routes/tomas");
+const glucosaRoutes = require("./routes/glucosa");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* ================== MIDDLEWARES ================== */
 app.use(
   cors({
     origin: "*",
@@ -14,26 +19,38 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json({ limit: "2mb" })); // las fotos ya no van en JSON
+
+app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
-// ✅ Servir archivos subidos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Rutas
+app.use((req, res, next) => {
+  console.log(`[REQ] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+/* ================== RUTAS PRINCIPALES ================== */
+
 app.use("/api/auth", require("./routes/auth"));
+
 app.use("/api/citas", require("./routes/citas"));
 app.use("/api/usuarios", require("./routes/usuarios"));
 app.use("/api/laboratorios", require("./routes/laboratorios"));
 app.use("/api/medicamentos", require("./routes/medicamentos"));
 app.use("/api/vias", require("./routes/vias"));
+app.use("/api/glucosa", glucosaRoutes);
+app.use("/api/tomas", tomasRoutes);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+/* ================== MANEJO DE ERRORES ================== */
+
 app.use((req, res) => {
-  res
-    .status(404)
-    .json({ error: `Ruta no encontrada: ${req.method} ${req.originalUrl}` });
+  console.warn(`[404] ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    error: `Ruta no encontrada: ${req.method} ${req.originalUrl}`,
+  });
 });
 
 app.use((err, _req, res, _next) => {
@@ -43,6 +60,7 @@ app.use((err, _req, res, _next) => {
     .json({ error: err.message || "Error interno del servidor" });
 });
 
+/* ================== INICIO DEL SERVIDOR ================== */
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });

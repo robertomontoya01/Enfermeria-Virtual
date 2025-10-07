@@ -2,49 +2,59 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1, // el contenedor ocupa toda la pantalla
+    flex: 1,
     justifyContent: "flex-start",
+    alignItems: "stretch",
+  },
+  header: {
     alignItems: "center",
+    justifyContent: "center",
   },
   Maintitle: {
     fontSize: 24,
     fontWeight: "600",
+    textAlign: "center",
   },
   title: {
     fontSize: 24,
     fontWeight: "600",
     marginTop: 12,
     marginBottom: 15,
+    textAlign: "center",
   },
   logo: {
     width: 200,
     height: 200,
     resizeMode: "contain",
     marginBottom: -15,
+    alignSelf: "center",
   },
   line: {
     height: 2.5,
     backgroundColor: "#000",
     width: "90%",
+    alignSelf: "center",
     marginVertical: 12,
     marginBottom: 10,
   },
 });
 
-//COMPONENTE DE CITAS
+// COMPONENTE DE CITAS
 export const cardCitas = StyleSheet.create({
   scrollContent: {
-    padding: 16,
-    alignItems: "center",
-    minWidth: "100%",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   card: {
     backgroundColor: "#f5f5f5",
     borderRadius: 12,
-    padding: 12,
     marginBottom: 12,
     elevation: 5,
-    width: "95%",
+    padding: 8, // menos padding
+    paddingLeft: 15,
+    marginVertical: 6, // menos espacio entre tarjetas
+    width: "94%", // un poco más angosta
+    alignSelf: "center", // 👈 antes "center"
   },
   header: {
     flexDirection: "row",
@@ -82,14 +92,13 @@ export const addButton = StyleSheet.create({
     backgroundColor: "#1e88e5",
     borderRadius: 50,
     padding: 13,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 6, // Android sombra
-    shadowColor: "#000", // iOS sombra
+    elevation: 6,
+    shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
-    zIndex: 999, // Asegura que esté al frente
+    zIndex: 999,
+    alignSelf: "center",
   },
 });
 

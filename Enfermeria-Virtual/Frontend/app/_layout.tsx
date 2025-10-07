@@ -17,7 +17,7 @@ export default function RootLayout() {
   });
 
   if (!loaded) {
-    return null; // O algún splash loader
+    return null;
   }
 
   return (

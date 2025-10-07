@@ -1,6 +1,6 @@
+// app/windows/Registro.tsx
 import React, { useState, useEffect } from "react";
 import {
-  View,
   Text,
   StyleSheet,
   TextInput,
@@ -23,13 +23,11 @@ export default function Registro() {
   const [apellidos, setApellidos] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // 🔹 Formato DD/MM/AAAA para mostrar al usuario
   const formatDateDDMMYYYY = (date: Date) => {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -37,10 +35,12 @@ export default function Registro() {
     return `${day}/${month}/${year}`;
   };
 
-  // 🔹 Cambiar el título del header al montar la pantalla
   useEffect(() => {
     navigation.setOptions({ title: "Crear Cuenta" });
-  }, []);
+  }, [navigation]);
+
+  const joinUrl = (base: string, path: string) =>
+    `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 
   const handleRegister = async () => {
     if (
@@ -62,33 +62,51 @@ export default function Registro() {
     }
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/register`, {
-        nombre,
-        apellidos,
-        fecha_nacimiento: `${fechaNacimiento.getFullYear()}-${(
-          fechaNacimiento.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, "0")}-${fechaNacimiento
-          .getDate()
-          .toString()
-          .padStart(2, "0")}`,
-        email,
-        telefono,
-        password,
-        especialidad_id: null,
+      const Nombre = nombre.trim();
+      const Apellidos = apellidos.trim();
+      const Email = email.trim().toLowerCase();
+      const Telefono = telefono.trim();
+
+      const Fecha_Nacimiento = `${fechaNacimiento.getFullYear()}-${(
+        fechaNacimiento.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}-${fechaNacimiento
+        .getDate()
+        .toString()
+        .padStart(2, "0")}`;
+
+      const payload = {
+        Nombre,
+        Apellidos,
+        Fecha_Nacimiento,
+        Email,
+        Telefono,
+        Password: password,
+        Especialidad_id: null,
+      };
+
+      const url = `${API_BASE_URL}/api/auth/register`;
+      console.log("POST", url, payload);
+
+      const res = await axios.post(url, payload, {
+        headers: { "Content-Type": "application/json" },
       });
 
       Alert.alert(
         "Éxito",
-        res.data.mensaje || "Usuario registrado correctamente"
+        res.data?.mensaje || "Usuario registrado correctamente"
       );
-      router.replace("/"); // volver al login
+      router.replace("/");
     } catch (error: any) {
-      console.error(error);
+      console.error(
+        "Error al registrar:",
+        error?.response?.status,
+        error?.response?.data
+      );
       Alert.alert(
         "Error",
-        error.response?.data?.error || "No se pudo crear la cuenta"
+        error?.response?.data?.error || "No se pudo crear la cuenta"
       );
     }
   };
@@ -110,7 +128,6 @@ export default function Registro() {
         onChangeText={setApellidos}
       />
 
-      {/* Fecha de nacimiento */}
       <TouchableOpacity
         style={styles.input}
         onPress={() => setShowDatePicker(true)}
@@ -131,7 +148,7 @@ export default function Registro() {
             setShowDatePicker(false);
             if (selectedDate) setFechaNacimiento(selectedDate);
           }}
-          maximumDate={new Date()} // ⚠️ evita fechas futuras
+          maximumDate={new Date()}
         />
       )}
 

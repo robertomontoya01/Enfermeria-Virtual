@@ -21,13 +21,10 @@ function auth(req, res, next) {
 /**
  * GET /api/citas
  * - Devuelve citas del usuario autenticado.
- * - Por defecto: si el token es de paciente → citas donde es PacienteID
- *                 si es doctor           → citas donde es DoctorID
- * - Opcional: ?scope=all para traer ambas (si lo necesitas)
  */
 router.get("/", auth, async (req, res) => {
   const { id: userId, type } = req.user;
-  const { scope } = req.query; // opcional: "all"
+  const { scope } = req.query;
 
   try {
     let where = "";
@@ -78,9 +75,65 @@ router.get("/", auth, async (req, res) => {
 });
 
 /**
+ * GET /api/citas/:id
+ * - Devuelve el detalle de una cita con info de doctor, laboratorio y nombre del estatus.
+ * - Solo accesible si el usuario autenticado es el Paciente o el Doctor de la cita.
+ */
+router.get("/:id", auth, async (req, res) => {
+  const { id } = req.params;
+  const { id: userId } = req.user;
+
+  const citaId = Number(id);
+  if (!citaId || Number.isNaN(citaId)) {
+    return res.status(400).json({ error: "ID de cita inválido" });
+  }
+
+  try {
+    const [rows] = await db.execute(
+      `
+      SELECT 
+        Citas.ID, 
+        Citas.Fecha_cita,
+        Citas.DoctorID,
+        Citas.PacienteID,
+        Citas.StatusID,
+        Citas.LaboratorioID,
+        Citas.Motivo,
+
+        -- Aliases que espera el frontend
+        CONCAT(U.Nombre, ' ', U.Apellidos) AS doctorNombre,
+        L.Nombre     AS laboratorioNombre,
+        L.Direccion  AS laboratorioDireccion,
+        L.Telefono   AS laboratorioTelefono,
+        SC.Status_citas AS statusNombre
+
+      FROM Citas
+      LEFT JOIN Usuarios U      ON Citas.DoctorID     = U.id
+      LEFT JOIN Laboratorios L  ON Citas.LaboratorioID = L.id
+      LEFT JOIN Status_citas SC ON Citas.StatusID     = SC.id
+      WHERE Citas.ID = ? AND (Citas.PacienteID = ? OR Citas.DoctorID = ?)
+      LIMIT 1
+      `,
+      [citaId, userId, userId]
+    );
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(404).json({ error: "Cita no encontrada" });
+    }
+
+    const row = rows[0];
+    row.StatusID = Number(row.StatusID);
+
+    return res.json(row);
+  } catch (err) {
+    console.error("GET /api/citas/:id:", err?.sqlMessage || err?.message);
+    return res.status(500).json({ error: "Error al obtener la cita" });
+  }
+});
+
+/**
  * POST /api/citas
  * - Crea una cita (paciente autenticado crea con un doctor)
- * body: { Motivo, DoctorID, LaboratorioID?, Fecha_cita (YYYY-MM-DD HH:mm:ss) }
  */
 router.post("/", auth, async (req, res) => {
   const { id: pacienteID, type } = req.user;
@@ -137,11 +190,7 @@ router.post("/", auth, async (req, res) => {
 
 /**
  * PATCH /api/citas/:id/status
- * - Cambia el estado de la cita (ej: confirmar, cancelar)
- * body: { StatusID }  // asegúrate de tener catálogo Status_citas
- * Reglas simples:
- *   - Paciente puede cancelar su propia cita
- *   - Doctor puede aceptar/rechazar citas donde es el doctor
+ * - Cambia el estado de la cita
  */
 router.patch("/:id/status", auth, async (req, res) => {
   const { id: userId, type } = req.user;
@@ -177,6 +226,22 @@ router.patch("/:id/status", auth, async (req, res) => {
     console.error("PATCH /api/citas/:id/status:", err);
     res.status(500).json({ error: "Error al actualizar estado" });
   }
+});
+
+/**
+ * (Opcional) PATCH /api/citas/:id
+ * - Alias para actualizar StatusID sin '/status' (por compatibilidad con el frontend).
+ */
+router.patch("/:id", auth, async (req, res) => {
+  const { StatusID } = req.body;
+  if (!StatusID)
+    return res.status(400).json({ error: "StatusID es obligatorio" });
+  // Reutilizamos la lógica del endpoint /:id/status
+  req.params = { ...req.params };
+  return router.handle(
+    { ...req, url: `/api/citas/${req.params.id}/status`, method: "PATCH" },
+    res
+  );
 });
 
 module.exports = router;

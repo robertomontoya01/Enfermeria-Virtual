@@ -48,14 +48,12 @@ export const SwitchSelector = () => {
     }
   };
 
-  // 🔄 Se ejecuta al volver a la pantalla
   useFocusEffect(
     useCallback(() => {
       fetchCitas();
     }, [])
   );
 
-  // ⬇️ Pull-to-refresh
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchCitas();
@@ -87,9 +85,9 @@ export const SwitchSelector = () => {
   };
 
   const tabColors = {
-    activas: "#339900", // verde
-    canceladas: "#cc3300", // rojo
-    anteriores: "#ec942c", // naranja
+    activas: "#339900",
+    canceladas: "#cc3300",
+    anteriores: "#ec942c",
   };
 
   return (

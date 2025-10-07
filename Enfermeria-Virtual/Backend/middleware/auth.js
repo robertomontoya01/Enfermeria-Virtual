@@ -17,7 +17,7 @@ module.exports = function (req, res, next) {
       token,
       process.env.JWT_SECRET || "mi_secreto_super_seguro"
     );
-    // decoded debería tener por lo menos { id, type }
+
     req.user = decoded;
     next();
   } catch (err) {

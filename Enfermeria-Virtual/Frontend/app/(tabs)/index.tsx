@@ -1,13 +1,16 @@
-// app/(tabs)/agenda.tsx
-import React from "react";
-import { View, Text, Image, ScrollView } from "react-native";
-import { styles, cardCitas } from "../../styles/styles";
-import CitasActivas from "../windows/CitasActivas"; // 👈 importa el componente
+import React, { useState } from "react";
+import { View, Text, Image } from "react-native";
+import { styles } from "../../styles/styles";
+import CitasActivas from "../windows/CitasActivas";
+import SmallTabs from "../../components/components/smallTabs";
+import MedicamentosActivos from "../windows/MedicamentosActivos";
 
 export default function AgendaScreen() {
+  const [active, setActive] = useState<"citas" | "medicamentos">("citas");
+
   return (
     <View style={styles.container}>
-      {/* Encabezado */}
+      {/* Encabezado*/}
       <View>
         <Image
           source={require("../../assets/images/logo.png")}
@@ -17,17 +20,21 @@ export default function AgendaScreen() {
       </View>
 
       <View style={styles.line} />
+      <Text style={styles.title}>Recordatorios</Text>
 
-      {/* Título */}
-      <Text style={styles.title}>Próximas citas</Text>
+      <SmallTabs
+        tabs={[
+          { key: "citas", label: "Citas" },
+          { key: "medicamentos", label: "Medicamentos" },
+        ]}
+        activeKey={active}
+        onChange={(k) => setActive(k as "citas" | "medicamentos")}
+      />
 
-      {/* Lista de citas activas */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={cardCitas.scrollContent}
-      >
-        <CitasActivas />
-      </ScrollView>
+      {/* IMPORTANTE: nada de ScrollView aquí */}
+      <View style={{ flex: 1, alignSelf: "stretch" }}>
+        {active === "citas" ? <CitasActivas /> : <MedicamentosActivos />}
+      </View>
     </View>
   );
 }

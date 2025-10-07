@@ -2,7 +2,7 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import Home from "../(tabs)/index"; // Pantalla principal o tab navigator
+import Home from "../(tabs)/index"; // Pantalla principal
 import FormularioCita from "../windows/FormularioCita";
 
 const Stack = createNativeStackNavigator();

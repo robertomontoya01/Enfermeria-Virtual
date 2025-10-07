@@ -16,7 +16,7 @@ api.interceptors.request.use(async (config) => {
 
 interface Cita {
   ID: number;
-  Fecha_cita: string; // "YYYY-MM-DD HH:mm:ss" o ISO
+  Fecha_cita: string;
   DoctorID: number;
   PacienteID: number;
   StatusID: number;
@@ -29,7 +29,6 @@ interface Cita {
 
 type CitaRaw = Omit<Cita, "StatusID"> & { StatusID: number | string };
 
-// ✅ mover fuera del componente
 const ACTIVE_STATUSES = new Set([1, 2]);
 
 function parseFechaFlexible(dt: string): Date {
@@ -72,7 +71,7 @@ export default function CitasActivas() {
   }, [fetchCitas]);
 
   const citasActivas = useMemo(() => {
-    const now = new Date(); // 👈 ahora está dentro del useMemo
+    const now = new Date();
     return (citas || []).filter((c) => {
       const fecha = parseFechaFlexible(String(c.Fecha_cita));
       return ACTIVE_STATUSES.has(c.StatusID) && fecha >= now;

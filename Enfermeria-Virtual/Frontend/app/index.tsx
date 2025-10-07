@@ -1,4 +1,3 @@
-// app/Inicio.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -29,7 +28,6 @@ export default function Inicio() {
     try {
       setLoading(true);
 
-      // 👇 Nueva ruta
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email: email.trim(),
         password,
@@ -37,11 +35,9 @@ export default function Inicio() {
 
       const { token, usuario } = res.data;
 
-      // 🔑 Guardar token y usuario
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("usuario", JSON.stringify(usuario));
 
-      // (opcional) Dejar axios listo con el token
       axios.defaults.headers.common.Authorization = `Bearer ${token}`;
 
       Alert.alert("Bienvenido", usuario.nombre);
@@ -108,10 +104,10 @@ export default function Inicio() {
 // === Estilos ===
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    flexGrow: 1,
+    alignItems: "stretch",
     padding: 20,
+    paddingTop: 100,
     backgroundColor: "#fff",
   },
   logoContainer: {
@@ -122,13 +118,11 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     resizeMode: "contain",
-    marginBottom: -15,
-    marginTop: -150,
   },
   Maintitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1e88e5",
+    color: "#336699",
   },
   input: {
     width: "100%",
@@ -140,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   button: {
-    backgroundColor: "#1e88e5",
+    backgroundColor: "#336699",
     padding: 15,
     borderRadius: 8,
     width: "100%",
@@ -153,10 +147,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   createAccountButton: {
-    padding: 10,
+    padding: 80,
+    alignItems: "center",
   },
   createAccountText: {
-    color: "#1e88e5",
+    color: "#336699",
     fontSize: 16,
     fontWeight: "600",
   },

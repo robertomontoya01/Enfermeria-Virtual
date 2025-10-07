@@ -11,7 +11,7 @@ const path = require("path");
 const UPLOAD_DIR = path.join(__dirname, "..", "uploads", "medicamentos");
 
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
+  destination: async (_req, _file, cb) => {
     try {
       await fs.mkdir(UPLOAD_DIR, { recursive: true });
       cb(null, UPLOAD_DIR);
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
       cb(e, UPLOAD_DIR);
     }
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname)?.toLowerCase() || ".jpg";
     const name = `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
     cb(null, name);
@@ -31,7 +31,7 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB por archivo
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const ok = /image\/(jpeg|png|jpg|webp)/.test(file.mimetype);
     if (!ok) return cb(new Error("Tipo de archivo no permitido"));
     cb(null, true);
@@ -51,24 +51,22 @@ router.post(
   async (req, res) => {
     const Usuario_id = req.user.id;
 
-    // Campos de texto provenientes de multipart/form-data
     let {
       Nombre,
       Dosis,
       Via_id,
-      Fecha_inicio, // YYYY-MM-DD
-      Fecha_fin, // YYYY-MM-DD
+      Fecha_inicio,
+      Fecha_fin,
       Intervalo_horas,
       Observaciones,
       Registrado_por,
     } = req.body;
 
     try {
-      // Archivos subidos (si existen)
       const frontalFile = req.files?.Foto_Frontal?.[0] || null;
       const traseraFile = req.files?.Foto_Trasera?.[0] || null;
 
-      // Rutas públicas para servir estático
+      // Rutas públicas para server estático
       const Foto_Frontal = frontalFile
         ? `/uploads/medicamentos/${frontalFile.filename}`
         : null;
@@ -88,6 +86,7 @@ router.post(
           .status(400)
           .json({ error: "Fecha_inicio y Fecha_fin son obligatorias" });
       }
+
       const ih = Number(Intervalo_horas);
       if (!ih || Number.isNaN(ih) || ih <= 0) {
         return res
@@ -104,7 +103,7 @@ router.post(
       try {
         await conn.beginTransaction();
 
-        // Verificar vía
+        // Verificar vía existente
         const [vias] = await conn.execute(
           "SELECT 1 FROM Vias WHERE Via_id = ?",
           [Via_id]
@@ -115,7 +114,7 @@ router.post(
           return res.status(400).json({ error: "La vía indicada no existe" });
         }
 
-        // Insert medicamento (guardamos rutas, no base64)
+        // Insert medicamento
         const [result] = await conn.execute(
           `INSERT INTO Medicamentos
            (Usuario_id, Nombre, Dosis, Foto_Frontal, Foto_Trasera, Via_id,
@@ -138,7 +137,7 @@ router.post(
 
         const Medicamento_id = result.insertId;
 
-        // Generar tomas (08:00 a fin del día final)
+        // Generar tomas
         let fIni = new Date(`${Fecha_inicio}T08:00:00`);
         const fFin = new Date(`${Fecha_fin}T23:59:59`);
         const tomas = [];
@@ -148,6 +147,7 @@ router.post(
             Medicamento_id,
             Usuario_id,
             fIni.toISOString().slice(0, 19).replace("T", " "),
+            1,
           ]);
           fIni.setHours(fIni.getHours() + ih);
         }
@@ -155,7 +155,7 @@ router.post(
         if (tomas.length) {
           await conn.query(
             `INSERT INTO Tomas_Medicamento
-             (Medicamento_id, Usuario_id, Fecha_hora_programada)
+             (Medicamento_id, Usuario_id, Fecha_hora_programada, Estatus_id)
              VALUES ?`,
             [tomas]
           );
@@ -191,7 +191,8 @@ router.post(
   }
 );
 
-// (Opcional) listar medicamentos del usuario autenticado
+// === GET /api/medicamentos ===
+// Lista medicamentos del usuario autenticado
 router.get("/", auth, async (req, res) => {
   const Usuario_id = req.user.id;
   try {
