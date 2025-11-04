@@ -7,10 +7,15 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../constants/config";
 
 export default function Inicio() {
@@ -51,108 +56,174 @@ export default function Inicio() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Logo y título */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../assets/images/logo.png")}
-          style={styles.logo}
-        />
-        <Text style={styles.Maintitle}>Enfermería Virtual</Text>
-      </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Logo y título */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../assets/images/logo.png")}
+            style={styles.logo}
+          />
+          <Text style={styles.title}>Salud Digital</Text>
+          <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+        </View>
 
-      {/* Campos de login */}
-      <TextInput
-        style={styles.input}
-        placeholder="Correo electrónico"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        {/* Card de login */}
+        <View style={styles.card}>
+          {/* Campo Email con ícono */}
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="person-outline"
+              size={22}
+              color="#7a869a"
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Correo electrónico"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
 
-      {/* Botón login */}
-      <TouchableOpacity
-        style={[styles.button, loading && { opacity: 0.6 }]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Ingresando..." : "Iniciar sesión"}
-        </Text>
-      </TouchableOpacity>
+          {/* Campo Contraseña con ícono */}
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={22}
+              color="#7a869a"
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Contraseña"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
 
-      {/* Crear cuenta */}
-      <TouchableOpacity
-        style={styles.createAccountButton}
-        onPress={() => router.push("/windows/Registro")}
-      >
-        <Text style={styles.createAccountText}>Crear una cuenta</Text>
-      </TouchableOpacity>
-    </View>
+          {/* Botón login */}
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.6 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Ingresar</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Crear cuenta */}
+        <TouchableOpacity
+          onPress={() => router.push("/windows/Registro")}
+          style={styles.footerLink}
+        >
+          <Text style={styles.footerText}>
+            ¿No tienes una cuenta?{" "}
+            <Text style={styles.footerHighlight}>Regístrate aquí</Text>
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-// === Estilos ===
+// === Estilos formales con íconos ===
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#f5f7fb",
+  },
+  scroll: {
     flexGrow: 1,
-    alignItems: "stretch",
-    padding: 20,
-    paddingTop: 100,
-    backgroundColor: "#fff",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   logoContainer: {
     alignItems: "center",
     marginBottom: 30,
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 250,
+    height: 250,
     resizeMode: "contain",
+    marginBottom: -15,
+    marginTop: -200,
   },
-  Maintitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#336699",
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#2e3a59",
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#7a869a",
+    marginTop: 4,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f8f9fd",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e0e4eb",
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  icon: {
+    marginRight: 8,
   },
   input: {
-    width: "100%",
+    flex: 1,
     height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
+    fontSize: 15,
+    color: "#000",
   },
   button: {
-    backgroundColor: "#336699",
-    padding: 15,
-    borderRadius: 8,
-    width: "100%",
+    backgroundColor: "#2e3a59",
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: "center",
-    marginBottom: 15,
+    marginTop: 5,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "600",
     fontSize: 16,
   },
-  createAccountButton: {
-    padding: 80,
+  footerLink: {
+    marginTop: 25,
     alignItems: "center",
   },
-  createAccountText: {
-    color: "#336699",
-    fontSize: 16,
-    fontWeight: "600",
+  footerText: {
+    color: "#6b7280",
+    fontSize: 15,
+  },
+  footerHighlight: {
+    color: "#2e3a59",
+    fontWeight: "700",
   },
 });

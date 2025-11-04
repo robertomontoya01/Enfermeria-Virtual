@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
+  Animated,
   ScrollView,
   RefreshControl,
 } from "react-native";
@@ -32,6 +33,9 @@ export const SwitchSelector = () => {
     "activas" | "canceladas" | "anteriores"
   >("activas");
   const [refreshing, setRefreshing] = useState(false);
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  const tabKeys = ["activas", "canceladas", "anteriores"] as const;
 
   const fetchCitas = async () => {
     try {
@@ -49,7 +53,7 @@ export const SwitchSelector = () => {
   };
 
   useFocusEffect(
-    useCallback(() => {
+    React.useCallback(() => {
       fetchCitas();
     }, [])
   );
@@ -84,32 +88,50 @@ export const SwitchSelector = () => {
     anteriores: "Anteriores",
   };
 
-  const tabColors = {
-    activas: "#339900",
-    canceladas: "#cc3300",
-    anteriores: "#ec942c",
-  };
+  // === Animación de desplazamiento del fondo activo ===
+  useEffect(() => {
+    Animated.spring(animValue, {
+      toValue: tabKeys.indexOf(selectedTab),
+      useNativeDriver: false,
+      speed: 10,
+      bounciness: 6,
+    }).start();
+  }, [selectedTab]);
+
+  const translateX = animValue.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: ["0%", "100%", "200%"],
+  });
 
   return (
     <View style={switchSelector.container}>
-      {/* Pestañas */}
-      <View style={switchSelector.tabs}>
-        {(["activas", "canceladas", "anteriores"] as const).map((tab) => (
+      <View style={[switchSelector.tabs, { position: "relative" }]}>
+        {/* Fondo animado */}
+        <Animated.View
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            width: "33.33%",
+            borderRadius: 14,
+            backgroundColor: "#2e3a59",
+            transform: [{ translateX }],
+          }}
+        />
+
+        {/* Pestañas */}
+        {tabKeys.map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setSelectedTab(tab)}
-            style={[
-              switchSelector.tab,
-              {
-                backgroundColor: tabColors[tab],
-                borderRadius: 1,
-              },
-            ]}
+            style={[switchSelector.tab]}
           >
             <Text
               style={[
                 switchSelector.tabText,
-                { textAlign: "center", color: "#fff", fontWeight: "700" },
+                selectedTab === tab
+                  ? switchSelector.activeText
+                  : { color: "#3b4664" },
               ]}
             >
               {tabNames[tab]}

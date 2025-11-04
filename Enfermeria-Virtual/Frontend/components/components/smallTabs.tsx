@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   activeTab: {
-    backgroundColor: "#1e88e5",
+    backgroundColor: "#2e3a59",
     shadowColor: "#1e88e5",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,

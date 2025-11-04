@@ -11,6 +11,7 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/montserrat": "^0.4.2",
     "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/datetimepicker": "^8.4.4",
@@ -37,9 +38,11 @@
     "expo-symbols": "~0.4.5",
     "expo-system-ui": "~5.0.9",
     "expo-web-browser": "~14.2.0",
+    "lucide-react-native": "^0.552.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.4",
+    "react-native-animatable": "^1.4.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-google-places-autocomplete": "^2.5.7",
     "react-native-reanimated": "~3.17.4",

@@ -1,100 +1,115 @@
 import { StyleSheet } from "react-native";
 
+// === ESTILOS GENERALES ===
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f7fb",
     justifyContent: "flex-start",
-    alignItems: "stretch",
   },
   header: {
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 8,
   },
   Maintitle: {
-    fontSize: 24,
-    fontWeight: "600",
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#2e3a59",
     textAlign: "center",
+    marginBottom: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "600",
+    color: "#3b4664",
     marginTop: 12,
     marginBottom: 15,
     textAlign: "center",
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 220,
+    height: 220,
     resizeMode: "contain",
-    marginBottom: -15,
+    marginBottom: -10,
     alignSelf: "center",
   },
   line: {
-    height: 2.5,
-    backgroundColor: "#000",
-    width: "90%",
+    height: 2,
+    backgroundColor: "#e0e4eb",
+    width: "88%",
     alignSelf: "center",
-    marginVertical: 12,
-    marginBottom: 10,
+    marginVertical: 14,
   },
 });
 
-// COMPONENTE DE CITAS
+// === COMPONENTE DE CITAS ===
 export const cardCitas = StyleSheet.create({
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
   },
   card: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 5,
-    padding: 8, // menos padding
-    paddingLeft: 15,
-    marginVertical: 6, // menos espacio entre tarjetas
-    width: "94%", // un poco más angosta
-    alignSelf: "center", // 👈 antes "center"
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    marginBottom: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+    width: "92%",
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#eef0f5",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  id: {
+    color: "#2e3a59",
+    fontWeight: "700",
+    fontSize: 13,
   },
   date: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#2e3a59",
   },
   doctor: {
     fontSize: 14,
     marginTop: 4,
-    color: "#555",
+    color: "#6b7280",
   },
   location: {
     marginTop: 10,
     fontWeight: "500",
+    color: "#3b4664",
   },
   status: {
-    marginTop: 3,
+    marginTop: 6,
     fontWeight: "700",
     alignSelf: "flex-end",
-  },
-  id: {
-    color: "#000",
-    fontWeight: "700",
-    fontSize: 12,
+    color: "#2e3a59",
   },
 });
 
+// === BOTÓN FLOTANTE ===
 export const addButton = StyleSheet.create({
   floatingButton: {
     position: "absolute",
-    bottom: 20,
-    backgroundColor: "#1e88e5",
+    bottom: 25,
+    backgroundColor: "#2e3a59",
     borderRadius: 50,
-    padding: 13,
+    padding: 15,
     elevation: 6,
     shadowColor: "#000",
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     zIndex: 999,
@@ -102,6 +117,7 @@ export const addButton = StyleSheet.create({
   },
 });
 
+// === SWITCH SELECTOR (TABS) ===
 export const switchSelector = StyleSheet.create({
   container: {
     flex: 1,
@@ -109,24 +125,27 @@ export const switchSelector = StyleSheet.create({
   },
   tabs: {
     flexDirection: "row",
-    backgroundColor: "#e0e0e0",
-    borderRadius: 15,
+    backgroundColor: "#eef0f5",
+    borderRadius: 14,
     overflow: "hidden",
-    marginBottom: 12,
+    marginBottom: 14,
+    alignSelf: "center",
+    justifyContent: "space-between",
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: "center",
-  },
-  activeTab: {
-    backgroundColor: "#0066ff",
+    justifyContent: "center",
   },
   tabText: {
-    color: "#333",
+    color: "#3b4664",
     fontWeight: "600",
+    fontSize: 15,
+    textAlign: "center",
   },
   activeText: {
     color: "#fff",
+    fontWeight: "700",
   },
 });

@@ -83,18 +83,21 @@ export default function AgregarLaboratorio() {
       <TextInput
         style={styles.input}
         placeholder="Nombre del laboratorio"
+        placeholderTextColor="#9ca3af"
         value={nombre}
         onChangeText={setNombre}
       />
       <TextInput
         style={styles.input}
         placeholder="Dirección"
+        placeholderTextColor="#9ca3af"
         value={direccion}
         onChangeText={setDireccion}
       />
       <TextInput
         style={styles.input}
         placeholder="Teléfono"
+        placeholderTextColor="#9ca3af"
         value={telefono}
         onChangeText={setTelefono}
         keyboardType="phone-pad"
@@ -102,12 +105,13 @@ export default function AgregarLaboratorio() {
       <TextInput
         style={styles.input}
         placeholder="Referencias del lugar (Opcional)"
+        placeholderTextColor="#9ca3af"
         value={ubicacion}
         onChangeText={setUbicacion}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleGuardar}>
-        <Text style={styles.buttonText}>Guardar</Text>
+      <TouchableOpacity style={styles.saveButton} onPress={handleGuardar}>
+        <Text style={styles.saveButtonText}>Guardar</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -115,30 +119,45 @@ export default function AgregarLaboratorio() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: "#fff",
+    padding: 24,
+    backgroundColor: "#f8f9fa",
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: 20,
+    marginBottom: 24,
     textAlign: "center",
+    color: "#1c3d5a",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 12,
-    fontSize: 16,
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#1e1e1e",
+    backgroundColor: "#fff",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  button: {
-    backgroundColor: "#1e88e5",
-    padding: 15,
-    borderRadius: 8,
+  saveButton: {
+    backgroundColor: "#1c3d5a",
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: "center",
+    marginTop: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  buttonText: {
+  saveButtonText: {
     color: "#fff",
     fontWeight: "700",
     fontSize: 16,

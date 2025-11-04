@@ -10,7 +10,6 @@ export default function AgendaScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Encabezado*/}
       <View>
         <Image
           source={require("../../assets/images/logo.png")}
@@ -31,7 +30,6 @@ export default function AgendaScreen() {
         onChange={(k) => setActive(k as "citas" | "medicamentos")}
       />
 
-      {/* IMPORTANTE: nada de ScrollView aquí */}
       <View style={{ flex: 1, alignSelf: "stretch" }}>
         {active === "citas" ? <CitasActivas /> : <MedicamentosActivos />}
       </View>

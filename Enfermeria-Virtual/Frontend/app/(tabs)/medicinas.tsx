@@ -3,41 +3,37 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Image,
   StyleSheet,
   ScrollView,
   Alert,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Notifications from "expo-notifications";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Picker } from "@react-native-picker/picker";
 import { API_BASE_URL } from "../../constants/config";
+import { MaterialIcons } from "@expo/vector-icons";
 
 // ===== Config notificaciones =====
-
-// Tipar explícitamente el handler para que TS valide contra el tipo correcto
 const notificationHandler: Notifications.NotificationHandler = {
   handleNotification:
     async (): Promise<Notifications.NotificationBehavior> => ({
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: false,
-      // Campos requeridos en versiones recientes de expo-notifications
       shouldShowBanner: true,
       shouldShowList: true,
     }),
 };
-
 Notifications.setNotificationHandler(notificationHandler);
 
-// ===== Helpers =====
 const toMySQLDate = (d: Date) => {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -46,14 +42,12 @@ const toMySQLDate = (d: Date) => {
 type ViaApi = { Via_id: number; Nombre: string; Descripcion?: string | null };
 
 export default function MedicinasScreen() {
-  // Form
   const [nombre, setNombre] = useState("");
   const [dosis, setDosis] = useState("");
   const [viaId, setViaId] = useState<number | null>(null);
   const [intervaloHoras, setIntervaloHoras] = useState<string>("8");
   const [observaciones, setObservaciones] = useState("");
 
-  // Fechas
   const [fechaInicio, setFechaInicio] = useState<Date>(new Date());
   const [fechaFin, setFechaFin] = useState<Date>(
     new Date(Date.now() + 3 * 24 * 3600 * 1000)
@@ -61,20 +55,16 @@ export default function MedicinasScreen() {
   const [showInicioPicker, setShowInicioPicker] = useState(false);
   const [showFinPicker, setShowFinPicker] = useState(false);
 
-  // Fotos (solo URI)
   const [fotoFrenteUri, setFotoFrenteUri] = useState<string | null>(null);
   const [fotoReversoUri, setFotoReversoUri] = useState<string | null>(null);
 
-  // Vías
   const [vias, setVias] = useState<ViaApi[]>([]);
   const [loadingVias, setLoadingVias] = useState<boolean>(false);
 
-  // ===== Cargar permisos + Vías =====
   useEffect(() => {
     (async () => {
       await Notifications.requestPermissionsAsync();
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
       try {
         setLoadingVias(true);
         const token = await AsyncStorage.getItem("token");
@@ -97,25 +87,20 @@ export default function MedicinasScreen() {
     })();
   }, []);
 
-  // ===== Selector de imagen (uri) =====
   const pickImage = async (setter: (uri: string) => void) => {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.7,
-      base64: false, // ⬅️ importante: ya no usamos base64
+      base64: false,
     });
-    if (!res.canceled && res.assets?.[0]?.uri) {
-      setter(res.assets[0].uri);
-    }
+    if (!res.canceled && res.assets?.[0]?.uri) setter(res.assets[0].uri);
   };
 
-  // ===== Programar recordatorio =====
   const programarRecordatorio = useCallback(
     async (medicina: string, viaTexto: string, horas: number) => {
       if (!horas || horas <= 0) return;
       const trigger: Notifications.TimeIntervalTriggerInput = {
-        // @ts-ignore — type requerido en versiones recientes
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
         seconds: Math.max(1, Math.floor(horas * 3600)),
         repeats: true,
@@ -131,7 +116,6 @@ export default function MedicinasScreen() {
     []
   );
 
-  // ===== Enviar al backend como multipart/form-data =====
   const subirMedicamentoFormData = useCallback(
     async (form: {
       nombre: string;
@@ -158,18 +142,15 @@ export default function MedicinasScreen() {
 
       const toFile = (uri: string, name: string) =>
         ({ uri, name, type: "image/jpeg" } as any);
-
-      if (form.fotoFrenteUri) {
+      if (form.fotoFrenteUri)
         fd.append("Foto_Frontal", toFile(form.fotoFrenteUri, "frente.jpg"));
-      }
-      if (form.fotoReversoUri) {
+      if (form.fotoReversoUri)
         fd.append("Foto_Trasera", toFile(form.fotoReversoUri, "reverso.jpg"));
-      }
 
       const res = await axios.post(`${API_BASE_URL}/api/medicamentos`, fd, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data", // deja que axios ponga el boundary
+          "Content-Type": "multipart/form-data",
         },
         timeout: 20000,
       });
@@ -184,18 +165,15 @@ export default function MedicinasScreen() {
     [viaId, vias]
   );
 
-  // ===== Guardar =====
   const handleGuardar = useCallback(async () => {
     try {
       if (!nombre.trim())
         return Alert.alert("Falta", "El nombre es obligatorio");
       const ih = Number(intervaloHoras);
-      if (!ih || Number.isNaN(ih) || ih <= 0) {
+      if (!ih || Number.isNaN(ih) || ih <= 0)
         return Alert.alert("Falta", "Intervalo de horas inválido");
-      }
-      if (!viaId) {
+      if (!viaId)
         return Alert.alert("Vía", "Selecciona la vía de administración");
-      }
 
       const data = await subirMedicamentoFormData({
         nombre,
@@ -209,7 +187,6 @@ export default function MedicinasScreen() {
         fotoReversoUri,
       });
 
-      // Notificación local
       const viaTexto = viaNombre || `Vía ${viaId}`;
       await programarRecordatorio(nombre, viaTexto, ih);
 
@@ -220,7 +197,6 @@ export default function MedicinasScreen() {
         }) y recordatorios programados`
       );
 
-      // Reset
       setNombre("");
       setDosis("");
       setIntervaloHoras("8");
@@ -231,12 +207,7 @@ export default function MedicinasScreen() {
       setFechaFin(new Date(Date.now() + 3 * 24 * 3600 * 1000));
       if (vias[0]) setViaId(vias[0].Via_id);
     } catch (err: any) {
-      console.log("ERR medicinas:", {
-        msg: err?.message,
-        status: err?.response?.status,
-        data: err?.response?.data,
-        url: err?.config?.url,
-      });
+      console.log("ERR medicinas:", err);
       Alert.alert(
         "Error",
         err?.response?.data?.error ||
@@ -260,7 +231,6 @@ export default function MedicinasScreen() {
     programarRecordatorio,
   ]);
 
-  // Handlers DateTimePicker (tipados)
   const onChangeInicio = (event: DateTimePickerEvent, date?: Date) => {
     void event;
     setShowInicioPicker(false);
@@ -282,7 +252,6 @@ export default function MedicinasScreen() {
         value={nombre}
         onChangeText={setNombre}
       />
-
       <TextInput
         style={styles.input}
         placeholder="Dosis (ej. 1 tableta, 5ml)"
@@ -290,7 +259,6 @@ export default function MedicinasScreen() {
         onChangeText={setDosis}
       />
 
-      {/* Vía */}
       <Text style={styles.label}>Vía de administración</Text>
       <View style={styles.pickerWrap}>
         <Picker
@@ -319,124 +287,202 @@ export default function MedicinasScreen() {
         keyboardType="numeric"
       />
 
-      {/* Fechas */}
       <View style={styles.rowBetween}>
-        <View style={{ flex: 1, marginRight: 6 }}>
-          <Button
-            title={`Fecha inicio: ${toMySQLDate(fechaInicio)}`}
-            onPress={() => setShowInicioPicker(true)}
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowInicioPicker(true)}
+        >
+          <MaterialIcons
+            name="calendar-today"
+            size={20}
+            color="#2e3a59"
+            style={{ marginRight: 8 }}
           />
-          {showInicioPicker && (
-            <DateTimePicker
-              value={fechaInicio}
-              mode="date"
-              display={Platform.OS === "ios" ? "inline" : "calendar"}
-              onChange={onChangeInicio}
-              minimumDate={new Date()}
-            />
-          )}
-        </View>
-        <View style={{ flex: 1, marginLeft: 6 }}>
-          <Button
-            title={`Fecha fin: ${toMySQLDate(fechaFin)}`}
-            onPress={() => setShowFinPicker(true)}
+          <Text style={styles.dateButtonText}>{toMySQLDate(fechaInicio)}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowFinPicker(true)}
+        >
+          <MaterialIcons
+            name="calendar-today"
+            size={20}
+            color="#2e3a59"
+            style={{ marginRight: 8 }}
           />
-          {showFinPicker && (
-            <DateTimePicker
-              value={fechaFin}
-              mode="date"
-              display={Platform.OS === "ios" ? "inline" : "calendar"}
-              onChange={onChangeFin}
-              minimumDate={fechaInicio}
-            />
-          )}
-        </View>
+          <Text style={styles.dateButtonText}>{toMySQLDate(fechaFin)}</Text>
+        </TouchableOpacity>
       </View>
 
+      {showInicioPicker && (
+        <DateTimePicker
+          value={fechaInicio}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "calendar"}
+          onChange={onChangeInicio}
+          minimumDate={new Date()}
+        />
+      )}
+      {showFinPicker && (
+        <DateTimePicker
+          value={fechaFin}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "calendar"}
+          onChange={onChangeFin}
+          minimumDate={fechaInicio}
+        />
+      )}
+
       <TextInput
-        style={[styles.input, { height: 90, textAlign: "center" }]}
+        style={[styles.input, { height: 90, textAlignVertical: "top" }]}
         placeholder="Observaciones"
         value={observaciones}
         onChangeText={setObservaciones}
         multiline
       />
 
-      {/* Fotos */}
-      <View style={styles.rowBetween}>
-        <View style={{ flex: 1, marginRight: 6 }}>
-          <Button
-            title="Foto frente caja"
+      <View style={styles.imagesContainer}>
+        <View style={styles.imageColumn}>
+          <TouchableOpacity
+            style={styles.imageButton}
             onPress={() => pickImage((u) => setFotoFrenteUri(u))}
-          />
-          {fotoFrenteUri ? (
+          >
+            <Text style={styles.imageButtonText}>Foto frente caja</Text>
+          </TouchableOpacity>
+          {fotoFrenteUri && (
             <Image source={{ uri: fotoFrenteUri }} style={styles.image} />
-          ) : null}
+          )}
         </View>
-        <View style={{ flex: 1, marginLeft: 6 }}>
-          <Button
-            title="Foto reverso caja"
+        <View style={styles.imageColumn}>
+          <TouchableOpacity
+            style={styles.imageButton}
             onPress={() => pickImage((u) => setFotoReversoUri(u))}
-          />
-          {fotoReversoUri ? (
+          >
+            <Text style={styles.imageButtonText}>Foto reverso caja</Text>
+          </TouchableOpacity>
+          {fotoReversoUri && (
             <Image source={{ uri: fotoReversoUri }} style={styles.image} />
-          ) : null}
+          )}
         </View>
       </View>
 
-      <View style={{ marginTop: 20, width: "100%" }}>
-        <Button
-          title="Guardar y programar notificación"
-          onPress={handleGuardar}
-        />
-      </View>
+      <TouchableOpacity style={styles.button} onPress={handleGuardar}>
+        <Text style={styles.buttonText}>Guardar y programar notificación</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: "#fff",
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 30,
+    backgroundColor: "#f5f7fb",
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#2e3a59",
     textAlign: "center",
+    marginBottom: 24,
   },
-  label: {
-    fontWeight: "600",
-    marginBottom: 6,
-    color: "#374151",
+  label: { fontSize: 15, fontWeight: "600", color: "#7a869a", marginBottom: 6 },
+  input: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e0e4eb",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#1e1e1e",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   pickerWrap: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    marginBottom: 10,
-    overflow: "hidden",
+    borderColor: "#e0e4eb",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
-  input: {
-    width: "100%",
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  dateButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 12,
-    borderRadius: 8,
+    borderColor: "#e0e4eb",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    marginHorizontal: 5,
+  },
+  dateButtonText: { fontSize: 16, color: "#1e1e1e", fontWeight: "500" },
+  imagesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  imageColumn: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  imageButton: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e0e4eb",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    width: "100%",
+    marginBottom: 10,
+  },
+  imageButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2e3a59",
+    textAlign: "center",
   },
   image: {
     width: "100%",
     height: 140,
-    marginTop: 10,
-    borderRadius: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e4eb",
+    backgroundColor: "#f8f9fd",
   },
-  rowBetween: {
-    flexDirection: "row",
+  button: {
+    backgroundColor: "#2e3a59",
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: "center",
-    marginVertical: 8,
+    marginTop: 20,
   },
-  hint: {
-    marginBottom: 10,
-    color: "#4b5563",
-  },
+  buttonText: { fontSize: 16, fontWeight: "700", color: "#fff" },
 });

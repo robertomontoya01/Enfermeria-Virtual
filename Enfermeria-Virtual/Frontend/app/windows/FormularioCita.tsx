@@ -75,14 +75,13 @@ export default function FormularioCita() {
         setSelectedLaboratorio(id);
         const existe = (laboratorios || []).some((l) => l.id === id);
         if (!existe && params.labNombre) {
-          setLaboratorios((prev) => [
+          setLaboratorios([
             { id, nombre: String(params.labNombre) },
-            ...(prev || []),
+            ...(laboratorios || []),
           ]);
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params?.labId, params?.labNombre, laboratorios.length]);
 
   useEffect(() => {
@@ -92,14 +91,13 @@ export default function FormularioCita() {
         setSelectedDoctor(id);
         const existe = (doctores || []).some((d) => d.id === id);
         if (!existe && params.docNombre) {
-          setDoctores((prev) => [
+          setDoctores([
             { id, nombreCompleto: String(params.docNombre) },
-            ...(prev || []),
+            ...(doctores || []),
           ]);
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params?.docId, params?.docNombre, doctores.length]);
 
   const handleDateChange = (_event: any, selectedDate?: Date) => {
@@ -201,6 +199,7 @@ export default function FormularioCita() {
         value={motivo}
         onChangeText={setMotivo}
         placeholder="Describe el motivo"
+        placeholderTextColor="#9ca3af"
       />
 
       <View style={styles.row}>
@@ -247,7 +246,6 @@ export default function FormularioCita() {
           <Text style={styles.addLabText}>+ Agregar laboratorio</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={selectedLaboratorio}
@@ -275,63 +273,110 @@ export default function FormularioCita() {
         />
       )}
 
-      <TouchableOpacity style={styles.button} onPress={handleGuardar}>
-        <Text style={styles.buttonText}>Guardar Cita</Text>
+      <TouchableOpacity style={styles.saveButton} onPress={handleGuardar}>
+        <Text style={styles.saveButtonText}>Guardar Cita</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#fff" },
-  label: { fontWeight: "700", marginTop: 20, marginBottom: 10, fontSize: 16 },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    marginBottom: 10,
+  container: {
+    padding: 24,
+    backgroundColor: "#f8f9fa",
+  },
+  label: {
+    fontWeight: "700",
+    marginBottom: 8,
+    fontSize: 16,
+    color: "#1c3d5a",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 12,
-    fontSize: 16,
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#1e1e1e",
+    backgroundColor: "#fff",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    marginBottom: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   dateButton: {
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    backgroundColor: "#fff",
     marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  dateText: { fontSize: 16, color: "#000" },
-  button: {
-    backgroundColor: "#1e88e5",
-    padding: 15,
-    borderRadius: 8,
+  dateText: {
+    fontSize: 16,
+    color: "#1c3d5a",
+  },
+  row: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    gap: 8,
+    marginBottom: 8,
   },
-  buttonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8 },
   addLabBtn: {
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: "#e3f2fd",
+    backgroundColor: "#e2e8f0",
     borderWidth: 1,
     borderColor: "#90caf9",
   },
-  addLabText: { color: "#1976d2", fontWeight: "700", fontSize: 12 },
-
+  addLabText: { color: "#1c3d5a", fontWeight: "600", fontSize: 13 },
   addDocBtn: {
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: "#e8f5e9",
+    backgroundColor: "#e2f4ea",
     borderWidth: 1,
     borderColor: "#a5d6a7",
   },
-  addDocText: { color: "#2e7d32", fontWeight: "700", fontSize: 12 },
+  addDocText: { color: "#2e7d32", fontWeight: "600", fontSize: 13 },
+  saveButton: {
+    backgroundColor: "#1c3d5a",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+  },
 });

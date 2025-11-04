@@ -18,7 +18,7 @@ import { API_BASE_URL } from "../../constants/config";
 
 type RegistroGlucosa = {
   id?: number;
-  fecha: string; // yyyy-mm-dd
+  fecha: string;
   paso: string;
   valor: number;
   paso_index?: number;
@@ -61,7 +61,6 @@ export default function RegistroGlucosaScreen() {
   const [registros, setRegistros] = useState<RegistroGlucosa[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // === Cargar historial desde backend ===
   useEffect(() => {
     (async () => {
       try {
@@ -95,7 +94,6 @@ export default function RegistroGlucosaScreen() {
     [registros]
   );
 
-  // === Guardar registro ===
   const guardarRegistro = async () => {
     if (hayRegistroHoy) {
       Alert.alert("Ya registrado", "Ya existe un registro para hoy.");
@@ -133,7 +131,6 @@ export default function RegistroGlucosaScreen() {
     }
   };
 
-  // === Exportar Excel: auto-guardar ===
   const exportarExcel = async () => {
     if (registros.length === 0) {
       Alert.alert("Sin datos", "No hay registros para exportar.");
@@ -160,12 +157,10 @@ export default function RegistroGlucosaScreen() {
 
     try {
       if (Platform.OS === "android") {
-        // 1) Intentar reutilizar el directorio de Descargas previamente autorizado
         let directoryUri = await AsyncStorage.getItem(
           ANDROID_DOWNLOADS_URI_KEY
         );
 
-        // 2) Si no hay uno guardado, pedirlo UNA sola vez
         if (!directoryUri) {
           const perm =
             await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
@@ -180,7 +175,6 @@ export default function RegistroGlucosaScreen() {
           await AsyncStorage.setItem(ANDROID_DOWNLOADS_URI_KEY, directoryUri);
         }
 
-        // 3) Crear el archivo en la carpeta elegida
         const mime =
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         const uri = await FileSystem.StorageAccessFramework.createFileAsync(
@@ -198,7 +192,6 @@ export default function RegistroGlucosaScreen() {
           "El archivo se guardó automáticamente en Descargas."
         );
       } else {
-        // iOS: guardado directo en el directorio interno
         const fileUri = `${FileSystem.documentDirectory}${filename}`;
         await FileSystem.writeAsStringAsync(fileUri, wbout, {
           encoding: FileSystem.EncodingType.Base64,
@@ -211,7 +204,6 @@ export default function RegistroGlucosaScreen() {
     }
   };
 
-  // === Render ===
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bitácora de Glucosa</Text>
@@ -230,29 +222,34 @@ export default function RegistroGlucosaScreen() {
 
       <TouchableOpacity
         style={[
-          styles.btnPrimary,
+          styles.btnGuardar,
           hayRegistroHoy && { backgroundColor: "#999" },
         ]}
         onPress={guardarRegistro}
         disabled={hayRegistroHoy}
+        activeOpacity={0.8}
       >
         <Ionicons
           name="save"
-          size={18}
+          size={16}
           color="#fff"
           style={{ marginRight: 6 }}
         />
-        <Text style={styles.btnText}>Guardar Registro</Text>
+        <Text style={styles.btnText}>Guardar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btnGhost} onPress={exportarExcel}>
+      <TouchableOpacity
+        style={styles.btnExportar}
+        onPress={exportarExcel}
+        activeOpacity={0.8}
+      >
         <Ionicons
           name="download"
-          size={18}
-          color="#1e88e5"
+          size={16}
+          color="#1c3d5a"
           style={{ marginRight: 6 }}
         />
-        <Text style={styles.btnGhostText}>Exportar a Excel</Text>
+        <Text style={styles.btnExportText}>Exportar</Text>
       </TouchableOpacity>
 
       <Text style={[styles.subtitle, { marginTop: 20 }]}>Historial</Text>
@@ -280,44 +277,78 @@ export default function RegistroGlucosaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fafafa" },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  subtitle: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
+  container: { flex: 1, padding: 24, backgroundColor: "#f8f9fa" },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1c3d5a",
     marginBottom: 12,
-    borderRadius: 6,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4b5563",
+    marginBottom: 12,
+  },
+  input: {
     backgroundColor: "#fff",
-  },
-  btnPrimary: {
-    flexDirection: "row",
-    backgroundColor: "#1e88e5",
-    padding: 12,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  btnText: { color: "#fff", fontWeight: "700" },
-  btnGhost: {
-    flexDirection: "row",
     borderWidth: 1,
-    borderColor: "#1e88e5",
+    borderColor: "#cbd5e1",
     borderRadius: 10,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#1e1e1e",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  btnGuardar: {
+    flexDirection: "row",
+    backgroundColor: "#1c3d5a",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  btnGhostText: { color: "#1e88e5", fontWeight: "700" },
+  btnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  btnExportar: {
+    flexDirection: "row",
+    backgroundColor: "#e2e8f0",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: "#ffffffff",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  btnExportText: { color: "#1c3d5a", fontWeight: "600", fontSize: 14 },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 12,
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   cardFecha: { fontSize: 12, color: "#555", marginBottom: 4 },
   cardPaso: { fontSize: 16, fontWeight: "600", marginBottom: 2 },

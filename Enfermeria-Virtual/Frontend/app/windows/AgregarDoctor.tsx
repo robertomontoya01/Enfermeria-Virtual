@@ -88,12 +88,14 @@ export default function AgregarDoctor() {
       <TextInput
         style={styles.input}
         placeholder="Nombre"
+        placeholderTextColor="#9ca3af"
         value={nombre}
         onChangeText={setNombre}
       />
       <TextInput
         style={styles.input}
         placeholder="Apellidos"
+        placeholderTextColor="#9ca3af"
         value={apellidos}
         onChangeText={setApellidos}
       />
@@ -102,6 +104,7 @@ export default function AgregarDoctor() {
         placeholder="Correo electrónico"
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor="#9ca3af"
         value={email}
         onChangeText={setEmail}
       />
@@ -109,26 +112,27 @@ export default function AgregarDoctor() {
         style={styles.input}
         placeholder="Teléfono"
         keyboardType="phone-pad"
+        placeholderTextColor="#9ca3af"
         value={telefono}
         onChangeText={setTelefono}
       />
 
       <TouchableOpacity
-        style={[styles.button, saving && { opacity: 0.7 }]}
+        style={[styles.saveButton, saving && { opacity: 0.7 }]}
         onPress={handleCrearDoctor}
         disabled={saving}
       >
-        <Text style={styles.buttonText}>
+        <Text style={styles.saveButtonText}>
           {saving ? "Guardando..." : "Guardar Doctor"}
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.backButton}
+        style={styles.cancelButton}
         onPress={() => router.back()}
         disabled={saving}
       >
-        <Text style={styles.backText}>Cancelar</Text>
+        <Text style={styles.cancelText}>Cancelar</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -137,47 +141,56 @@ export default function AgregarDoctor() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    alignItems: "stretch",
-    padding: 20,
-    backgroundColor: "#fff",
+    padding: 24,
+    backgroundColor: "#f8f9fa",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1e88e5",
-    marginBottom: 30,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1c3d5a",
+    marginBottom: 24,
     textAlign: "center",
   },
   input: {
-    width: "100%",
-    height: 50,
-    borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    justifyContent: "center",
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#1e1e1e",
+    backgroundColor: "#fff",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  button: {
-    backgroundColor: "#1e88e5",
-    padding: 15,
-    borderRadius: 8,
-    width: "100%",
+  saveButton: {
+    backgroundColor: "#1c3d5a",
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  buttonText: {
+  saveButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 16,
   },
-  backButton: {
-    marginTop: 20,
+  cancelButton: {
+    marginTop: 16,
     alignSelf: "center",
   },
-  backText: {
-    color: "#1e88e5",
-    fontSize: 15,
+  cancelText: {
+    color: "#1c3d5a",
     fontWeight: "600",
+    fontSize: 15,
   },
 });

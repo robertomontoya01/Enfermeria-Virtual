@@ -15,10 +15,10 @@ interface Cita {
 }
 
 const coloresStatus: Record<number, string> = {
-  1: "#fbc02d", // Pendiente
-  2: "#2e7d32", // Confirmada
-  3: "#d32f2f", // Cancelada
-  4: "#616161", // Rechazada
+  1: "#fbc02d", // Pendiente - Dorado elegante
+  2: "#4caf50", // Confirmada - Verde natural
+  3: "#c62828", // Cancelada - Rojo oscuro
+  4: "#757575", // Rechazada - Gris neutro
 };
 
 export default function CitaVisual({ cita }: { cita: Cita }) {

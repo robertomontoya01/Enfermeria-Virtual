@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { useLocalSearchParams, useRouter, useNavigation } from "expo-router"; // 👈 añadido useNavigation
+import { useLocalSearchParams, useNavigation } from "expo-router"; // 👈 añadido useNavigation
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -57,7 +57,6 @@ function parseFechaFlexible(dt: string): Date {
 
 export default function DetalleCita() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const navigation = useNavigation();
 
   const [cita, setCita] = useState<CitaDetalle | null>(null);
@@ -305,6 +304,7 @@ const sx = StyleSheet.create({
   container: {
     padding: 16,
     paddingBottom: 28,
+    backgroundColor: "#f8f9fa",
   },
   loading: {
     flex: 1,
@@ -313,8 +313,16 @@ const sx = StyleSheet.create({
   },
   cardLifted: {
     borderLeftWidth: 4,
-    borderLeftColor: "#1e88e5",
-    paddingTop: 14,
+    borderLeftColor: "#1c3d5a",
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+    marginBottom: 16,
   },
   headerRow: {
     flexDirection: "row",
@@ -327,7 +335,7 @@ const sx = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(30,136,229,0.12)",
+    backgroundColor: "rgba(28,61,90,0.12)",
   },
   pill: {
     paddingHorizontal: 10,
@@ -336,6 +344,7 @@ const sx = StyleSheet.create({
   },
   pillText: {
     fontWeight: "700",
+    fontSize: 12,
   },
   divider: {
     height: 1,
@@ -350,6 +359,7 @@ const sx = StyleSheet.create({
   rowLabel: {
     fontWeight: "700",
     color: "#333",
+    fontSize: 14,
   },
   addressWrap: {
     marginTop: 6,
@@ -361,6 +371,7 @@ const sx = StyleSheet.create({
   addressText: {
     flexShrink: 1,
     color: "#333",
+    fontSize: 14,
   },
   mapBtn: {
     flexDirection: "row",
@@ -370,25 +381,32 @@ const sx = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#1e88e5",
+    borderColor: "#1c3d5a",
+    backgroundColor: "#eaf0f8",
   },
   mapBtnText: {
-    color: "#1e88e5",
+    color: "#1c3d5a",
     fontWeight: "700",
+    fontSize: 13,
   },
   actionsCard: {
     marginTop: 14,
-    backgroundColor: "#f7f9fc",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
     borderColor: "#e6ebf2",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
   actionsTitle: {
-    fontWeight: "800",
+    fontWeight: "700",
     fontSize: 14,
     marginBottom: 8,
-    color: "#1b2a4a",
+    color: "#1c3d5a",
   },
   actionsGrid: {
     flexDirection: "row",
@@ -398,14 +416,17 @@ const sx = StyleSheet.create({
   actionBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    minWidth: 100,
+    justifyContent: "center",
   },
   actionText: {
     fontWeight: "700",
+    fontSize: 13,
   },
   backBtn: {
     marginTop: 18,
@@ -415,7 +436,8 @@ const sx = StyleSheet.create({
     gap: 6,
   },
   backText: {
-    color: "#1e88e5",
+    color: "#1c3d5a",
     fontWeight: "700",
+    fontSize: 14,
   },
 });
