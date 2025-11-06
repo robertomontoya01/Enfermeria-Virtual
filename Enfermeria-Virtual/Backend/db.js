@@ -1,5 +1,8 @@
 require("dotenv").config();
 const mysql = require("mysql2/promise");
+const fs = require("fs");
+
+const caCert = fs.readFileSync(__dirname + "/certs/ca.pem");
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -8,22 +11,17 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
   ssl: {
-    // Railway usa certificados auto-firmados, por eso usamos esta configuración
-    minVersion: "TLSv1.2",
-    rejectUnauthorized: false,
+    ca: caCert,
   },
-  connectTimeout: 20000, // 20 segundos para conectar
   waitForConnections: true,
-  connectionLimit: 5,
+  connectionLimit: 10,
   queueLimit: 0,
 });
 
 pool
   .getConnection()
   .then(() =>
-    console.log(
-      "✅ Conexión establecida con MySQL (Railway público con TLSv1.2)"
-    )
+    console.log("✅ Conexión establecida con certificado SSL (Railway MySQL)")
   )
   .catch((err) => console.error("❌ Error de conexión MySQL:", err.message));
 
