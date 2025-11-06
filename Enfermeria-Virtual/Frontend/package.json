@@ -4,12 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "start:dev": "cross-env EXPO_PUBLIC_ENV=development expo start",
-    "start:prod": "cross-env EXPO_PUBLIC_ENV=production expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "reset-project": "node ./scripts/reset-project.js",
     "lint": "expo lint",
     "build:apk": "expo build:android -t apk"
   },
@@ -60,8 +58,7 @@
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
-    "typescript": "~5.8.3",
-    "cross-env": "^7.0.3"
+    "typescript": "~5.8.3"
   },
   "private": true
 }

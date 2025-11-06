@@ -1,6 +1,3 @@
-export const ENV = process.env.EXPO_PUBLIC_ENV ?? "development";
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://10.0.2.2:3000";
-
-console.log(`🌎 Entorno activo: ${ENV}`);
-console.log(`🔗 API: ${API_BASE_URL}`);
+  "https://enfermeria-virtual-production.up.railway.app";
+console.log("🔗 Conectando siempre a producción:", API_BASE_URL);
