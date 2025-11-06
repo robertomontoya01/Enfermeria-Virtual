@@ -2,14 +2,12 @@ require("dotenv").config();
 const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({
-  host: process.env.MYSQLHOST || "localhost",
-  user: process.env.MYSQLUSER || "root",
-  password: process.env.MYSQLPASSWORD || "root",
-  database: process.env.MYSQLDATABASE || "enfermeria_virtual",
-  port: process.env.MYSQLPORT || 3306,
-  ssl: {
-    rejectUnauthorized: true,
-  },
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  ssl: { rejectUnauthorized: true },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
