@@ -1,4 +1,3 @@
-// Backend/db.js
 require("dotenv").config();
 const mysql = require("mysql2/promise");
 
@@ -7,6 +6,8 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "root",
   database: process.env.DB_NAME || "enfermeria_virtual",
+  port: process.env.DB_PORT || 3306,
+  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : undefined,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
