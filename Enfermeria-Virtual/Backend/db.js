@@ -7,10 +7,19 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
-  ssl: { rejectUnauthorized: true },
+  ssl: {
+    rejectUnauthorized: false,
+  },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+pool
+  .getConnection()
+  .then(() =>
+    console.log("✅ Conexión establecida con MySQL (Railway host público)")
+  )
+  .catch((err) => console.error("❌ Error de conexión MySQL:", err.message));
 
 module.exports = pool;
