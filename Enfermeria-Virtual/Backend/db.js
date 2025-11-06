@@ -8,17 +8,22 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
   ssl: {
+    // Railway usa certificados auto-firmados, por eso usamos esta configuración
+    minVersion: "TLSv1.2",
     rejectUnauthorized: false,
   },
+  connectTimeout: 20000, // 20 segundos para conectar
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5,
   queueLimit: 0,
 });
 
 pool
   .getConnection()
   .then(() =>
-    console.log("✅ Conexión establecida con MySQL (Railway host público)")
+    console.log(
+      "✅ Conexión establecida con MySQL (Railway público con TLSv1.2)"
+    )
   )
   .catch((err) => console.error("❌ Error de conexión MySQL:", err.message));
 
