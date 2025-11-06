@@ -9,7 +9,7 @@ router.get("/", async (req, res) => {
 
   try {
     let query =
-      "SELECT id, CONCAT(Nombre, ' ', Apellidos) AS nombreCompleto FROM Usuarios";
+      "SELECT id, CONCAT(Nombre, ' ', Apellidos) AS nombreCompleto FROM usuarios";
     if (tipo === "doctor") query += " WHERE Tipo_usuario_id = 2";
     else if (tipo === "paciente") query += " WHERE Tipo_usuario_id = 1";
 
