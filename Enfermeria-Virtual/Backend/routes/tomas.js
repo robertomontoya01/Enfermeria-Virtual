@@ -23,8 +23,8 @@ router.get("/", auth, async (req, res) => {
         t.Fecha_hora_real,
         t.Estatus_id,
         t.Observaciones
-      FROM Tomas_Medicamento t
-      JOIN Medicamentos m ON m.Medicamento_id = t.Medicamento_id
+      FROM tomas_medicamento t
+      JOIN medicamentos m ON m.Medicamento_id = t.Medicamento_id
       WHERE t.Usuario_id = ?
       ORDER BY t.Fecha_hora_programada DESC
       `,
@@ -57,8 +57,8 @@ router.get("/proximas", auth, async (req, res) => {
         t.Fecha_hora_programada,
         t.Estatus_id,
         t.Observaciones
-      FROM Tomas_Medicamento t
-      JOIN Medicamentos m ON m.Medicamento_id = t.Medicamento_id
+      FROM tomas_medicamento t
+      JOIN medicamentos m ON m.Medicamento_id = t.Medicamento_id
       WHERE t.Usuario_id = ?
         AND t.Estatus_id = 1
         AND t.Fecha_hora_programada >= NOW()
@@ -86,7 +86,7 @@ router.put("/:id/tomar", auth, async (req, res) => {
 
     const [result] = await db.query(
       `
-      UPDATE Tomas_Medicamento
+      UPDATE tomas_medicamento
       SET Estatus_id = 2,
           Fecha_hora_real = NOW(),
           Observaciones = COALESCE(?, Observaciones)
@@ -117,7 +117,7 @@ router.put("/:id/omitir", auth, async (req, res) => {
 
     const [result] = await db.query(
       `
-      UPDATE Tomas_Medicamento
+      UPDATE tomas_medicamento
       SET Estatus_id = 3,
           Observaciones = COALESCE(?, Observaciones)
       WHERE Toma_id = ? AND Usuario_id = ?

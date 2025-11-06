@@ -35,7 +35,7 @@ router.post("/register", async (req, res) => {
     const telNorm = String(Telefono).trim();
 
     const [[emailDup]] = await db.execute(
-      "SELECT COUNT(*) AS c FROM Usuarios WHERE LOWER(Email)=LOWER(?)",
+      "SELECT COUNT(*) AS c FROM usuarios WHERE LOWER(Email)=LOWER(?)",
       [emailNorm]
     );
     if (emailDup.c > 0) {
@@ -43,7 +43,7 @@ router.post("/register", async (req, res) => {
     }
 
     const [[telDup]] = await db.execute(
-      "SELECT COUNT(*) AS c FROM Usuarios WHERE Telefono = ?",
+      "SELECT COUNT(*) AS c FROM usuarios WHERE Telefono = ?",
       [telNorm]
     );
     if (telDup.c > 0) {
@@ -54,7 +54,7 @@ router.post("/register", async (req, res) => {
     const hashed = await bcrypt.hash(Password, 10);
 
     const [result] = await db.execute(
-      `INSERT INTO Usuarios
+      `INSERT INTO usuarios
         (Nombre, Apellidos, Fecha_Nacimiento, Email, Telefono, Password, Tipo_usuario_id, Especialidad_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -123,7 +123,7 @@ router.post("/login", async (req, res) => {
          Telefono,
          Password AS password,
          Tipo_usuario_id
-       FROM Usuarios
+       FROM usuarios
        WHERE Email = ?`,
       [email]
     );
@@ -179,7 +179,7 @@ router.post("/register-doctor", async (req, res) => {
     const emailNorm = String(Email).trim().toLowerCase();
 
     const [result] = await db.execute(
-      `INSERT INTO Usuarios 
+      `INSERT INTO usuarios 
        (Nombre, Apellidos, Fecha_Nacimiento, Email, Telefono, Password, Tipo_usuario_id, Especialidad_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [

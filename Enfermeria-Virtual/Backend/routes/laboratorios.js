@@ -23,8 +23,8 @@ router.get("/", auth, async (req, res) => {
          Registrado_por AS registrado_por,
          Fecha_registro,
          Ultima_modificacion
-       FROM Laboratorios
-       WHERE Registrado_por = ?   -- 👈 filtro por usuario logeado
+       FROM laboratorios
+       WHERE Registrado_por = ?
        ORDER BY id DESC`,
       [usuarioId]
     );
@@ -58,7 +58,7 @@ router.post("/", auth, async (req, res) => {
     ubicacion = ubicacion ? String(ubicacion).trim() : null;
 
     const [result] = await db.execute(
-      `INSERT INTO Laboratorios (Nombre, Direccion, Telefono, Ubicacion, Registrado_por)
+      `INSERT INTO laboratorios (Nombre, Direccion, Telefono, Ubicacion, Registrado_por)
        VALUES (?, ?, ?, ?, ?)`,
       [nombre, direccion, telefono, ubicacion, usuarioId]
     );

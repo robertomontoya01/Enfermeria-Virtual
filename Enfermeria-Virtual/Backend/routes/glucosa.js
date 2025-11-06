@@ -32,7 +32,7 @@ router.get("/", auth, async (req, res) => {
 
     const sql = `
       SELECT id, usuario_id, fecha, paso_index, paso, valor, created_at
-      FROM Glucosa_Registros
+      FROM glucosa_registros
       ${where}
       ORDER BY fecha DESC, id DESC
       LIMIT ? OFFSET ?
@@ -57,7 +57,7 @@ router.get("/hoy", auth, async (req, res) => {
     const [rows] = await db.query(
       `
       SELECT id, usuario_id, fecha, paso_index, paso, valor, created_at
-      FROM Glucosa_Registros
+      FROM glucosa_registros
       WHERE usuario_id = ? AND fecha = CURDATE()
       LIMIT 1
       `,
@@ -106,7 +106,7 @@ router.post("/", auth, async (req, res) => {
     try {
       const [result] = await db.query(
         `
-        INSERT INTO Glucosa_Registros (usuario_id, fecha, paso_index, paso, valor)
+        INSERT INTO glucosa_registros (usuario_id, fecha, paso_index, paso, valor)
         VALUES (?, ?, ?, ?, ?)
         `,
         [userId, fecha, paso_index, paso.trim(), nValor]

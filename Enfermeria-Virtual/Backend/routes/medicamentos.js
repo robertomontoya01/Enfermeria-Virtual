@@ -28,9 +28,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB por archivo
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_req, file, cb) => {
     const ok = /image\/(jpeg|png|jpg|webp)/.test(file.mimetype);
     if (!ok) return cb(new Error("Tipo de archivo no permitido"));
@@ -39,8 +37,6 @@ const upload = multer({
 });
 
 // === POST /api/medicamentos ===
-// Espera multipart/form-data con:
-// campos de texto + files: Foto_Frontal, Foto_Trasera
 router.post(
   "/",
   auth,
@@ -66,7 +62,6 @@ router.post(
       const frontalFile = req.files?.Foto_Frontal?.[0] || null;
       const traseraFile = req.files?.Foto_Trasera?.[0] || null;
 
-      // Rutas públicas para server estático
       const Foto_Frontal = frontalFile
         ? `/uploads/medicamentos/${frontalFile.filename}`
         : null;
@@ -74,27 +69,21 @@ router.post(
         ? `/uploads/medicamentos/${traseraFile.filename}`
         : null;
 
-      // Validaciones básicas
-      if (!Nombre?.trim()) {
+      if (!Nombre?.trim())
         return res.status(400).json({ error: "Nombre es obligatorio" });
-      }
-      if (!Via_id) {
+      if (!Via_id)
         return res.status(400).json({ error: "Via_id es obligatorio" });
-      }
-      if (!Fecha_inicio || !Fecha_fin) {
+      if (!Fecha_inicio || !Fecha_fin)
         return res
           .status(400)
           .json({ error: "Fecha_inicio y Fecha_fin son obligatorias" });
-      }
 
       const ih = Number(Intervalo_horas);
-      if (!ih || Number.isNaN(ih) || ih <= 0) {
+      if (!ih || Number.isNaN(ih) || ih <= 0)
         return res
           .status(400)
           .json({ error: "Intervalo_horas debe ser un número > 0" });
-      }
 
-      // Normalizar opcionales
       Dosis = Dosis || null;
       Observaciones = Observaciones || null;
       Registrado_por = Registrado_por || null;
@@ -103,9 +92,9 @@ router.post(
       try {
         await conn.beginTransaction();
 
-        // Verificar vía existente
+        // ✅ Verificar vía existente
         const [vias] = await conn.execute(
-          "SELECT 1 FROM Vias WHERE Via_id = ?",
+          "SELECT 1 FROM vias WHERE Via_id = ?",
           [Via_id]
         );
         if (!Array.isArray(vias) || vias.length === 0) {
@@ -114,9 +103,9 @@ router.post(
           return res.status(400).json({ error: "La vía indicada no existe" });
         }
 
-        // Insert medicamento
+        // ✅ Insert medicamento
         const [result] = await conn.execute(
-          `INSERT INTO Medicamentos
+          `INSERT INTO medicamentos
            (Usuario_id, Nombre, Dosis, Foto_Frontal, Foto_Trasera, Via_id,
             Fecha_inicio, Fecha_fin, Intervalo_horas, Observaciones, Registrado_por)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -137,7 +126,7 @@ router.post(
 
         const Medicamento_id = result.insertId;
 
-        // Generar tomas
+        // ✅ Generar tomas
         let fIni = new Date(`${Fecha_inicio}T08:00:00`);
         const fFin = new Date(`${Fecha_fin}T23:59:59`);
         const tomas = [];
@@ -154,7 +143,7 @@ router.post(
 
         if (tomas.length) {
           await conn.query(
-            `INSERT INTO Tomas_Medicamento
+            `INSERT INTO tomas_medicamento
              (Medicamento_id, Usuario_id, Fecha_hora_programada, Estatus_id)
              VALUES ?`,
             [tomas]
@@ -192,7 +181,6 @@ router.post(
 );
 
 // === GET /api/medicamentos ===
-// Lista medicamentos del usuario autenticado
 router.get("/", auth, async (req, res) => {
   const Usuario_id = req.user.id;
   try {
@@ -202,8 +190,8 @@ router.get("/", auth, async (req, res) => {
          m.Intervalo_horas, m.Observaciones, m.Estado, m.Fecha_registro,
          m.Foto_Frontal, m.Foto_Trasera,
          v.Nombre AS Via_nombre
-       FROM Medicamentos m
-       LEFT JOIN Vias v ON v.Via_id = m.Via_id
+       FROM medicamentos m
+       LEFT JOIN vias v ON v.Via_id = m.Via_id
        WHERE m.Usuario_id = ?
        ORDER BY m.Fecha_registro DESC`,
       [Usuario_id]

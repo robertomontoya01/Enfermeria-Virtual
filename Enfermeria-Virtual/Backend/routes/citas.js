@@ -31,38 +31,38 @@ router.get("/", auth, async (req, res) => {
     let params = [];
 
     if (scope === "all") {
-      where = "WHERE (Citas.DoctorID = ? OR Citas.PacienteID = ?)";
+      where = "WHERE (citas.DoctorID = ? OR citas.PacienteID = ?)";
       params = [userId, userId];
     } else if (type === "paciente") {
-      where = "WHERE Citas.PacienteID = ?";
+      where = "WHERE citas.PacienteID = ?";
       params = [userId];
     } else {
       // doctor
-      where = "WHERE Citas.DoctorID = ?";
+      where = "WHERE citas.DoctorID = ?";
       params = [userId];
     }
 
     const [rows] = await db.execute(
       `
       SELECT 
-        Citas.ID, 
-        Citas.Fecha_cita,
-        Citas.DoctorID,
-        Citas.PacienteID,
-        Citas.StatusID,
-        Citas.LaboratorioID,
-        Citas.Motivo,
+        citas.ID, 
+        citas.Fecha_cita,
+        citas.DoctorID,
+        citas.PacienteID,
+        citas.StatusID,
+        citas.LaboratorioID,
+        citas.Motivo,
         CONCAT(DU.Nombre, ' ', DU.Apellidos) AS doctorNombre,
         CONCAT(PU.Nombre, ' ', PU.Apellidos) AS pacienteNombre,
         L.Nombre AS laboratorioNombre,
         SC.Status_citas AS statusNombre
-      FROM Citas
-      LEFT JOIN Usuarios DU ON Citas.DoctorID = DU.id
-      LEFT JOIN Usuarios PU ON Citas.PacienteID = PU.id
-      LEFT JOIN Laboratorios L ON Citas.LaboratorioID = L.id
-      LEFT JOIN Status_citas SC ON Citas.StatusID = SC.id
+      FROM citas
+      LEFT JOIN usuarios DU ON citas.DoctorID = DU.id
+      LEFT JOIN usuarios PU ON citas.PacienteID = PU.id
+      LEFT JOIN laboratorios L ON citas.LaboratorioID = L.id
+      LEFT JOIN status_citas SC ON citas.StatusID = SC.id
       ${where}
-      ORDER BY Citas.Fecha_cita ASC
+      ORDER BY citas.Fecha_cita ASC
       `,
       params
     );
@@ -92,26 +92,23 @@ router.get("/:id", auth, async (req, res) => {
     const [rows] = await db.execute(
       `
       SELECT 
-        Citas.ID, 
-        Citas.Fecha_cita,
-        Citas.DoctorID,
-        Citas.PacienteID,
-        Citas.StatusID,
-        Citas.LaboratorioID,
-        Citas.Motivo,
-
-        -- Aliases que espera el frontend
+        citas.ID, 
+        citas.Fecha_cita,
+        citas.DoctorID,
+        citas.PacienteID,
+        citas.StatusID,
+        citas.LaboratorioID,
+        citas.Motivo,
         CONCAT(U.Nombre, ' ', U.Apellidos) AS doctorNombre,
         L.Nombre     AS laboratorioNombre,
         L.Direccion  AS laboratorioDireccion,
         L.Telefono   AS laboratorioTelefono,
         SC.Status_citas AS statusNombre
-
-      FROM Citas
-      LEFT JOIN Usuarios U      ON Citas.DoctorID     = U.id
-      LEFT JOIN Laboratorios L  ON Citas.LaboratorioID = L.id
-      LEFT JOIN Status_citas SC ON Citas.StatusID     = SC.id
-      WHERE Citas.ID = ? AND (Citas.PacienteID = ? OR Citas.DoctorID = ?)
+      FROM citas
+      LEFT JOIN usuarios U      ON citas.DoctorID     = U.id
+      LEFT JOIN laboratorios L  ON citas.LaboratorioID = L.id
+      LEFT JOIN status_citas SC ON citas.StatusID     = SC.id
+      WHERE citas.ID = ? AND (citas.PacienteID = ? OR citas.DoctorID = ?)
       LIMIT 1
       `,
       [citaId, userId, userId]
@@ -162,9 +159,8 @@ router.post("/", auth, async (req, res) => {
   }
 
   try {
-    // Verificar conflicto con el doctor
     const [exist] = await db.execute(
-      `SELECT 1 FROM Citas WHERE DoctorID = ? AND Fecha_cita = ? LIMIT 1`,
+      `SELECT 1 FROM citas WHERE DoctorID = ? AND Fecha_cita = ? LIMIT 1`,
       [DoctorID, Fecha_cita]
     );
     if (exist.length > 0) {
@@ -174,7 +170,7 @@ router.post("/", auth, async (req, res) => {
     }
 
     const [result] = await db.execute(
-      `INSERT INTO Citas (PacienteID, DoctorID, LaboratorioID, Fecha_cita, Motivo, StatusID)
+      `INSERT INTO citas (PacienteID, DoctorID, LaboratorioID, Fecha_cita, Motivo, StatusID)
        VALUES (?, ?, ?, ?, ?, 1)`,
       [pacienteID, DoctorID, LaboratorioID || null, Fecha_cita, Motivo]
     );
@@ -201,9 +197,8 @@ router.patch("/:id/status", auth, async (req, res) => {
     return res.status(400).json({ error: "StatusID es obligatorio" });
 
   try {
-    // Obtener cita para validar permisos
     const [rows] = await db.execute(
-      `SELECT DoctorID, PacienteID FROM Citas WHERE ID = ?`,
+      `SELECT DoctorID, PacienteID FROM citas WHERE ID = ?`,
       [id]
     );
     if (rows.length === 0)
@@ -217,7 +212,7 @@ router.patch("/:id/status", auth, async (req, res) => {
       return res.status(403).json({ error: "No puedes modificar esta cita" });
     }
 
-    await db.execute(`UPDATE Citas SET StatusID = ? WHERE ID = ?`, [
+    await db.execute(`UPDATE citas SET StatusID = ? WHERE ID = ?`, [
       StatusID,
       id,
     ]);
@@ -236,7 +231,6 @@ router.patch("/:id", auth, async (req, res) => {
   const { StatusID } = req.body;
   if (!StatusID)
     return res.status(400).json({ error: "StatusID es obligatorio" });
-  // Reutilizamos la lógica del endpoint /:id/status
   req.params = { ...req.params };
   return router.handle(
     { ...req, url: `/api/citas/${req.params.id}/status`, method: "PATCH" },

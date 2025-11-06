@@ -1,12 +1,13 @@
+// Backend/routes/vias.js
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// GET /api/vias  -> devuelve todas las vías
+// GET /api/vias -> devuelve todas las vías
 router.get("/", async (_req, res) => {
   try {
     const [rows] = await db.execute(
-      "SELECT Via_id, Nombre, Descripcion FROM Vias ORDER BY Nombre ASC"
+      "SELECT Via_id, Nombre, Descripcion FROM vias ORDER BY Nombre ASC"
     );
     res.json(rows);
   } catch (err) {
