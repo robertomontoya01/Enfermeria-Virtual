@@ -7,19 +7,18 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
-  ssl: "Amazon RDS", // usa SSL tipo Amazon RDS
+  ssl: {
+    rejectUnauthorized: false,
+  },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 20000,
 });
 
 pool
   .getConnection()
   .then(() =>
-    console.log(
-      "✅ Conexión establecida a MySQL (Railway público con Amazon RDS SSL)"
-    )
+    console.log("✅ Conexión interna a MySQL (SSL ignorado, Railway)")
   )
   .catch((err) => console.error("❌ Error de conexión MySQL:", err.message));
 
